@@ -1910,7 +1910,7 @@ public class Blocks{
             requirements(Category.distribution, with(Items.copper, 1));
             health = 45;
             speed = 0.03f;
-            displayedSpeed = 4.2f;
+            displayedSpeed = 4f;
             buildCostMultiplier = 2f;
             researchCost = with(Items.copper, 5);
         }};
