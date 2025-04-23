@@ -31,6 +31,9 @@ public class BurstDrill extends Drill{
 
     public Sound drillSound = Sounds.drillImpact;
     public float drillSoundVolume = 0.6f, drillSoundPitchRand = 0.1f;
+    public Color baseColor;
+    public Color boostColor;
+    public Color updateColor;
 
     public BurstDrill(String name){
         super(name);
@@ -145,6 +148,12 @@ public class BurstDrill extends Drill{
                 Draw.color(dominantItem.color);
                 Draw.rect(itemRegion, x, y);
                 Draw.color();
+            }
+            if(efficiency > 1f){
+                updateColor = boostColor;
+            }
+            else{
+                updateColor = baseColor;
             }
 
             float fract = smoothProgress;
