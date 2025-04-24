@@ -2898,7 +2898,7 @@ public class Blocks{
             tier = 6;
             baseColor = Pal.redLight;
             boostColor = Liquids.ozone.color;
-            drillEffect = new MultiEffect(Fx.mineImpact, Fx.drillSteam, Fx.mineImpactWave.wrap(updateColor, 40f));
+            rotation = 40f;
             shake = 4f;
             itemCapacity = 40;
             //can't mine thorium for balance reasons, needs better drill
@@ -2923,13 +2923,8 @@ public class Blocks{
             tier = 7;
             baseColor = Liquids.hydrogen.color;
             boostColor = Liquids.cyanogen.color;
+            rotation = 30f;
             //TODO better effect
-            drillEffect = new MultiEffect(
-                Fx.mineImpact,
-                Fx.drillSteam,
-                Fx.dynamicSpikes.wrap(updateColor, 30f),
-                Fx.mineImpactWave.wrap(updateColor, 45f)
-            );
             shake = 4f;
             itemCapacity = 60;
             arrowOffset = 2f;

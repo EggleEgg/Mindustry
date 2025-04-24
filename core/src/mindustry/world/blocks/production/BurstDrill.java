@@ -8,6 +8,7 @@ import arc.util.*;
 import mindustry.annotations.Annotations.*;
 import mindustry.content.*;
 import mindustry.entities.*;
+import mindustry.entities.effect.MultiEffect;
 import mindustry.gen.*;
 import mindustry.graphics.*;
 import mindustry.type.*;
@@ -31,9 +32,8 @@ public class BurstDrill extends Drill{
 
     public Sound drillSound = Sounds.drillImpact;
     public float drillSoundVolume = 0.6f, drillSoundPitchRand = 0.1f;
-    public Color baseColor;
-    public Color boostColor;
-    public Color updateColor;
+    public Color baseColor, boostColor, updateColor = baseColor;
+    public float rotation;
 
     public BurstDrill(String name){
         super(name);
@@ -100,6 +100,8 @@ public class BurstDrill extends Drill{
 
                 lastDrillSpeed = 1f / drillTime * speed * dominantItems;
                 progress += delta() * speed;
+                updateColor = (efficiency > 1f) ? boostColor : baseColor;
+                drillEffect = new MultiEffect(Fx.mineImpact, Fx.drillSteam, Fx.mineImpactWave.wrap(updateColor, rotation));      
             }else{
                 warmup = Mathf.approachDelta(warmup, 0f, 0.01f);
                 lastDrillSpeed = 0f;
@@ -148,12 +150,6 @@ public class BurstDrill extends Drill{
                 Draw.color(dominantItem.color);
                 Draw.rect(itemRegion, x, y);
                 Draw.color();
-            }
-            if(efficiency > 1f){
-                updateColor = boostColor;
-            }
-            else{
-                updateColor = baseColor;
             }
 
             float fract = smoothProgress;
