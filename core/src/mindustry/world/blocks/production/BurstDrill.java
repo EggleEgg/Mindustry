@@ -35,6 +35,39 @@ public class BurstDrill extends Drill{
     public Color baseColor, boostColor, updateColor = baseColor;
     public float rotation;
 
+    public Effect updateMineImpactWave = new Effect(50f, e -> {
+        arc.graphics.g2d.Draw.color(updateColor);
+
+        arc.graphics.g2d.Lines.stroke(e.fout() * 1.5f);
+
+        arc.math.Angles.randLenVectors(e.id, 12, 4f + e.finpow() * rotation, (x, y) -> {
+            arc.graphics.g2d.Lines.lineAngle(e.x + x, e.y + y, Mathf.angle(x, y), e.fout() * 5 + 1f);
+        });
+
+        e.scaled(30f, b -> {
+            Lines.stroke(5f * b.fout());
+            Lines.circle(e.x, e.y, b.finpow() * 28f);
+        });
+    });
+
+    public Effect updateDynamicSpikes = new Effect(40f, 100f, e -> {
+        arc.graphics.g2d.Draw.color(updateColor);
+        arc.graphics.g2d.Lines.stroke(e.fout() * 2f);
+        float circleRad = 4f + e.finpow() * rotation;
+        Lines.circle(e.x, e.y, circleRad);
+
+        for(int i = 0; i < 4; i++){
+            Drawf.tri(e.x, e.y, 6f, rotation * 1.5f * e.fout(), i*90);
+        }
+
+        arc.graphics.g2d.Draw.color();
+        for(int i = 0; i < 4; i++){
+            Drawf.tri(e.x, e.y, 3f, rotation * 1.45f / 3f * e.fout(), i*90);
+        }
+
+        Drawf.light(e.x, e.y, circleRad * 1.6f, Pal.heal, e.fout());
+    });
+
     public BurstDrill(String name){
         super(name);
 
@@ -100,8 +133,7 @@ public class BurstDrill extends Drill{
 
                 lastDrillSpeed = 1f / drillTime * speed * dominantItems;
                 progress += delta() * speed;
-                updateColor = (efficiency > 1f) ? boostColor : baseColor;
-                drillEffect = new MultiEffect(Fx.mineImpact, Fx.drillSteam, Fx.mineImpactWave.wrap(updateColor, rotation));      
+                updateColor = (speed > (liquidBoostIntensity * efficiency) ) ? boostColor : baseColor;  
             }else{
                 warmup = Mathf.approachDelta(warmup, 0f, 0.01f);
                 lastDrillSpeed = 0f;
