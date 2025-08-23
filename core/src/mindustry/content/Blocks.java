@@ -6297,7 +6297,7 @@ public class Blocks{
             size = 3;
             consumePower(3f);
             consumeLiquid(Liquids.hydrogen, 3f / 60f);
-            consumeItems(with(Items.silicon, 40, Items.tungsten, 30));
+            consumeItems(with(Items.silicon, 60, Items.tungsten, 35));
 
             constructTime = 60f * 30f;
             researchCostMultiplier = 0.75f;

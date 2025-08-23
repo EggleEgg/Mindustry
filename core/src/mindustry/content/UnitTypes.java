@@ -2552,7 +2552,7 @@ public class UnitTypes{
             weapons.add(new Weapon("locus-weapon"){{
                 shootSound = Sounds.bolt;
                 layerOffset = 0.0001f;
-                reload = 18f;
+                reload = 14f;
                 shootY = 10f;
                 recoil = 1f;
                 rotate = true;
@@ -2621,7 +2621,7 @@ public class UnitTypes{
             treadPullOffset = 5;
             speed = 0.64f;
             rotateSpeed = 1.5f;
-            health = 5000;
+            health = 5200;
             armor = 11f;
             itemCapacity = 0;
             treadRects = new Rect[]{new Rect(16 - 60f, 48 - 70f, 30, 75), new Rect(44 - 60f, 17 - 70f, 17, 60)};
@@ -2630,7 +2630,7 @@ public class UnitTypes{
             weapons.add(new Weapon("precept-weapon"){{
                 shootSound = Sounds.dullExplosion;
                 layerOffset = 0.0001f;
-                reload = 80f;
+                reload = 83f;
                 shootY = 16f;
                 recoil = 3f;
                 rotate = true;
