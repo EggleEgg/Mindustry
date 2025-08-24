@@ -5043,6 +5043,7 @@ public class Blocks{
             shootType = new PointLaserBulletType(){{
                 damage = 210f;
                 buildingDamageMultiplier = 0.3f;
+                pierceDamageFactor = 1f;
                 hitColor = Color.valueOf("fda981");
             }};
 

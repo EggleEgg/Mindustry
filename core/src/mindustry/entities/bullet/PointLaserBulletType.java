@@ -4,6 +4,8 @@ import arc.*;
 import arc.graphics.*;
 import arc.graphics.g2d.*;
 import arc.math.*;
+import arc.math.geom.*;
+import arc.math.geom.*;
 import arc.util.*;
 import mindustry.content.*;
 import mindustry.entities.*;
@@ -26,16 +28,18 @@ public class PointLaserBulletType extends BulletType{
     public float damageInterval = 5f;
 
     public float shake = 0f;
+    public float length = 100f;
 
     public PointLaserBulletType(){
-        removeAfterPierce = false;
         speed = 0f;
+        lifetime = 1f;
         despawnEffect = Fx.none;
         lifetime = 20f;
         impact = true;
         keepVelocity = false;
         collides = false;
         pierce = true;
+        pierceBuilding = true;
         hittable = false;
         absorbable = false;
         optimalLifeFract = 0.5f;
@@ -68,7 +72,7 @@ public class PointLaserBulletType extends BulletType{
         super.draw(b);
 
         Draw.color(color);
-        Drawf.laser(laser, laserEnd, b.x, b.y, b.aimX, b.aimY, b.fslope() * (1f - oscMag + Mathf.absin(Time.time, oscScl, oscMag)));
+        Drawf.laser(laser, laserEnd, b.x, b.y, b.x + Mathf.cosDeg(b.rotation()) * b.fdata, b.y + Mathf.sinDeg(b.rotation()) * b.fdata, b.fslope() * (1f - oscMag + Mathf.absin(Time.time, oscScl, oscMag)));
 
         Draw.reset();
     }
@@ -90,6 +94,41 @@ public class PointLaserBulletType extends BulletType{
         if(shake > 0){
             Effect.shake(shake, shake, b);
         }
+    }
+
+    @Override
+    public void handlePierce(Bullet b, float initialHealth, float x, float y){
+        float sub = Math.max(initialHealth * pierceDamageFactor, 0);
+
+        if(b.damage <= 0){
+            b.fdata = Math.min(b.fdata, b.dst(x, y));
+            return;
+        }
+
+        //subtract health from each consecutive pierce
+        b.damage -= Math.min(b.damage, sub);
+
+        //bullet was stopped, decrease furthest distance
+        if(b.damage <= 0f){
+            b.fdata = Math.min(b.fdata, b.dst(x, y));
+        }
+    }
+
+    @Override
+    protected float calculateRange(){
+        return length;
+    }
+
+    @Override
+    public void init(Bullet b){
+        super.init(b);
+
+        b.fdata = length;
+        Damage.collideLine(b, b.team, b.x, b.y, b.rotation(), length, false, false, pierceCap);
+        float resultLen = b.fdata;
+
+        Vec2 nor = Tmp.v1.trns(b.rotation(), 1f).nor();
+        boolean any = b.collided.size > 0;
     }
 
     @Override
@@ -126,5 +165,15 @@ public class PointLaserBulletType extends BulletType{
                 intervalBullet.create(b, b.aimX, b.aimY, ang + Mathf.range(intervalRandomSpread) + intervalAngle + ((i - (intervalBullets - 1f)/2f) * intervalSpread));
             }
         }
+    }
+
+    @Override
+    public boolean testCollision(Bullet bullet, Building tile){
+        return bullet.team != tile.team;
+    }
+
+    @Override
+    public void hitTile(Bullet b, Building build, float x, float y, float initialHealth, boolean direct){
+        handlePierce(b, initialHealth, x, y);
     }
 }
