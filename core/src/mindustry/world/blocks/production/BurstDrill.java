@@ -114,6 +114,12 @@ public class BurstDrill extends Drill{
                 if(wasVisible){
                     Effect.shake(shake, shake, this);
                     drillSound.at(x, y, 1f + Mathf.range(drillSoundPitchRand), drillSoundVolume);
+                    if(optionalEfficiency > 0){
+                        if(findConsumer(f -> f instanceof ConsumeLiquid && f.booster) instanceof ConsumeLiquid cons){
+                            drillEffect.wrap(cons.liquid.color).at(x + Mathf.range(drillEffectRnd), y + Mathf.range(drillEffectRnd), dominantItem.color);
+                        }
+                    }
+
                     drillEffect.at(x + Mathf.range(drillEffectRnd), y + Mathf.range(drillEffectRnd), dominantItem.color);
                 }
             }
