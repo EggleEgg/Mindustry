@@ -5064,12 +5064,15 @@ public class Blocks{
         }};
 
         lustre = new ContinuousTurret("lustre"){{
+            float brange = range = 250f;
+
             requirements(Category.turret, with(Items.silicon, 250, Items.graphite, 200, Items.oxide, 50, Items.carbide, 90));
 
             shootType = new PointLaserBulletType(){{
                 damage = 210f;
                 buildingDamageMultiplier = 0.3f;
                 pierceDamageFactor = 1f;
+                length = brange;
                 hitColor = Color.valueOf("fda981");
             }};
 
@@ -5120,7 +5123,6 @@ public class Blocks{
             outlineColor = Pal.darkOutline;
             size = 4;
             envEnabled |= Env.space;
-            range = 250f;
             scaledHealth = 210;
 
             unitSort = UnitSorts.strongest;

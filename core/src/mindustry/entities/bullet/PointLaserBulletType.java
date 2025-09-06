@@ -19,13 +19,15 @@ public class PointLaserBulletType extends BulletType{
 
     public Color color = Color.white;
 
-    public Effect beamEffect = Fx.colorTrail;
+    public Effect beamEffect = Fx.colorTrail, pierceEffect = Fx.hitBulletSmall;
     public float beamEffectInterval = 3f, beamEffectSize = 3.5f;
 
     public float oscScl = 2f, oscMag = 0.3f;
     public float damageInterval = 5f;
 
     public float shake = 0f;
+    public float length = 100f;
+    public float eX, eY;
 
     public PointLaserBulletType(){
         removeAfterPierce = false;
@@ -68,23 +70,64 @@ public class PointLaserBulletType extends BulletType{
         super.draw(b);
 
         Draw.color(color);
-        Drawf.laser(laser, laserEnd, b.x, b.y, b.aimX, b.aimY, b.fslope() * (1f - oscMag + Mathf.absin(Time.time, oscScl, oscMag)));
+        Drawf.laser(laser, laserEnd, b.x, b.y, eX, eY, b.fslope() * (1f - oscMag + Mathf.absin(Time.time, oscScl, oscMag)));
 
         Draw.reset();
+    }
+    
+    @Override
+    protected float calculateRange(){
+        return length;
+    }
+
+    @Override
+    public void handlePierce(Bullet b, float initialHealth, float x, float y){
+        float sub = Math.max(initialHealth * pierceDamageFactor, 0);
+
+        if(b.damage <= 0){
+            b.fdata = Math.min(b.fdata, b.dst(x, y));
+            return;
+        }
+
+        if(b.damage > 0){
+            pierceEffect.at(x, y, b.rotation());
+        }
+
+        //subtract health from each consecutive pierce
+        b.damage -= Math.min(b.damage, sub);
+
+        //bullet was stopped, decrease furthest distance
+        if(b.damage <= 0f){
+            b.fdata = Math.min(b.fdata, b.dst(x, y));
+        }
+    }
+
+    @Override
+    public boolean testCollision(Bullet bullet, Building tile){
+        return bullet.team != tile.team;
+    }
+
+    @Override
+    public void hitTile(Bullet b, Building build, float x, float y, float initialHealth, boolean direct){
+        handlePierce(b, initialHealth, x, y);
     }
 
     @Override
     public void update(Bullet b){
+        eX = b.x + Angles.trnsx(b.rotation(), b.fdata);
+        eY = b.y + Angles.trnsy(b.rotation(), b.fdata);
+
         updateTrail(b);
         updateTrailEffects(b);
         updateBulletInterval(b);
 
         if(b.timer.get(0, damageInterval)){
-            Damage.collidePoint(b, b.team, hitEffect, b.aimX, b.aimY);
+            b.fdata = Math.min(b.dst(b.aimX, b.aimY), length);
+            Damage.collideLine(b, b.team, b.x, b.y, b.rotation(), b.fdata, false, false, pierceCap);
         }
 
         if(b.timer.get(1, beamEffectInterval)){
-            beamEffect.at(b.aimX, b.aimY, beamEffectSize * b.fslope(), hitColor);
+            beamEffect.at(eX, eY, beamEffectSize * b.fslope(), hitColor);
         }
 
         if(shake > 0){
@@ -96,13 +139,13 @@ public class PointLaserBulletType extends BulletType{
     public void updateTrailEffects(Bullet b){
         if(trailChance > 0){
             if(Mathf.chanceDelta(trailChance)){
-                trailEffect.at(b.aimX, b.aimY, trailRotation ? b.angleTo(b.aimX, b.aimY) : (trailParam * b.fslope()), trailColor);
+                trailEffect.at(eX, eY, trailRotation ? b.angleTo(eX, eY) : (trailParam * b.fslope()), trailColor);
             }
         }
 
         if(trailInterval > 0f){
             if(b.timer(0, trailInterval)){
-                trailEffect.at(b.aimX, b.aimY, trailRotation ? b.angleTo(b.aimX, b.aimY) : (trailParam * b.fslope()), trailColor);
+                trailEffect.at(eX, eY, trailRotation ? b.angleTo(eX, eY) : (trailParam * b.fslope()), trailColor);
             }
         }
     }
@@ -114,7 +157,7 @@ public class PointLaserBulletType extends BulletType{
                 b.trail = new Trail(trailLength);
             }
             b.trail.length = trailLength;
-            b.trail.update(b.aimX, b.aimY, b.fslope() * (1f - (trailSinMag > 0 ? Mathf.absin(Time.time, trailSinScl, trailSinMag) : 0f)));
+            b.trail.update(eX, eY, b.fslope() * (1f - (trailSinMag > 0 ? Mathf.absin(Time.time, trailSinScl, trailSinMag) : 0f)));
         }
     }
 
@@ -123,7 +166,7 @@ public class PointLaserBulletType extends BulletType{
         if(intervalBullet != null && b.time >= intervalDelay && b.timer.get(2, bulletInterval)){
             float ang = b.rotation();
             for(int i = 0; i < intervalBullets; i++){
-                intervalBullet.create(b, b.aimX, b.aimY, ang + Mathf.range(intervalRandomSpread) + intervalAngle + ((i - (intervalBullets - 1f)/2f) * intervalSpread));
+                intervalBullet.create(b, eX, eY, ang + Mathf.range(intervalRandomSpread) + intervalAngle + ((i - (intervalBullets - 1f)/2f) * intervalSpread));
             }
         }
     }
