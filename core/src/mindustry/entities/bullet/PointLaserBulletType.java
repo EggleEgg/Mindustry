@@ -27,7 +27,7 @@ public class PointLaserBulletType extends BulletType{
 
     public float shake = 0f;
     public float length = 100f;
-    public float eX, eY;
+    public float eX, eY, dst;
 
     public PointLaserBulletType(){
         removeAfterPierce = false;
@@ -109,13 +109,18 @@ public class PointLaserBulletType extends BulletType{
 
     @Override
     public void hitTile(Bullet b, Building build, float x, float y, float initialHealth, boolean direct){
-        handlePierce(b, initialHealth, x, y);
+        if(b.timer.get(0, damageInterval)){
+        Damage.collidePoint(b, b.team, hitEffect, b.aimX, b.aimY);
+        }
     }
 
     @Override
     public void update(Bullet b){
-        eX = b.x + Angles.trnsx(b.rotation(), b.fdata);
-        eY = b.y + Angles.trnsy(b.rotation(), b.fdata);
+
+        // For drawing the laser correctly
+        dst = Math.min(b.fdata, length);
+        eX = b.x + Angles.trnsx(b.rotation(), dst);
+        eY = b.y + Angles.trnsy(b.rotation(), dst);
 
         updateTrail(b);
         updateTrailEffects(b);
