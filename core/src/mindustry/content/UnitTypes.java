@@ -2675,8 +2675,7 @@ public class UnitTypes{
                         width = 5f;
                         height = 7f;
                         lifetime = 15f;
-                        hitSize = 4f;
-                        
+                        hitSize = 4f;  
                         pierceCap = 3;
                         pierce = true;
                         pierceBuilding = true;
