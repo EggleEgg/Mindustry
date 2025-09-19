@@ -306,9 +306,13 @@ public class Damage{
         collided.each(c -> {
             if(hitter.damage > 0 && (pierceCap <= 0 || collideCount[0] < pierceCap)){
                 if(c.target instanceof Unit u){
-                    u.collision(hitter, c.x, c.y);
-                    hitter.collision(u, c.x, c.y);
-                    collideCount[0]++;
+                    if(u.underShield){
+                        
+                    }else{
+                        u.collision(hitter, c.x, c.y);
+                        hitter.collision(u, c.x, c.y);
+                        collideCount[0]++;
+                    }
                 }else if(c.target instanceof Building tile){
                     float health = tile.health;
 

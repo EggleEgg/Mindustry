@@ -65,38 +65,42 @@ public class ShieldArcAbility extends Ability{
 
     protected static final Cons<Unit> unitConsumer = unit -> {
         // ignore core units
-        if(paramField.data > 0 && unit.targetable(paramUnit.team) &&
+        if(paramField.data > 0 &&
             !(unit.within(paramPos, paramField.radius - paramField.width) && paramPos.within(unit.x - unit.deltaX, unit.y - unit.deltaY, paramField.radius - paramField.width)) &&
             (Tmp.v1.set(unit).add(unit.deltaX, unit.deltaY).within(paramPos, paramField.radius + paramField.width) || unit.within(paramPos, paramField.radius + paramField.width)) &&
             (Angles.within(paramPos.angleTo(unit), paramUnit.rotation + paramField.angleOffset, paramField.angle / 2f) || Angles.within(paramPos.angleTo(unit.x + unit.deltaX, unit.y + unit.deltaY), paramUnit.rotation + paramField.angleOffset, paramField.angle / 2f))){
-                
-            if(unit.isMissile() && unit.killable() && paramField.missileUnitMultiplier >= 0f){
+            if(paramUnit.team != unit.team && unit.targetable(paramUnit.team)){
+                if(unit.isMissile() && unit.killable() && paramField.missileUnitMultiplier >= 0f){
 
-                unit.remove();
-                unit.type.deathSound.at(unit);
-                unit.type.deathExplosionEffect.at(unit);
-                Fx.absorb.at(unit);
-                Fx.circleColorSpark.at(unit.x, unit.y,paramUnit.team.color);
-                
-                // consider missile hp and gamerule to damage the shield
-                paramField.data -= unit.health() * paramField.missileUnitMultiplier * Vars.state.rules.unitDamage(unit.team);
-                paramField.alpha = 1f;
+                    unit.remove();
+                    unit.type.deathSound.at(unit);
+                    unit.type.deathExplosionEffect.at(unit);
+                    Fx.absorb.at(unit);
+                    Fx.circleColorSpark.at(unit.x, unit.y,paramUnit.team.color);
+                    
+                    // consider missile hp and gamerule to damage the shield
+                    paramField.data -= unit.health() * paramField.missileUnitMultiplier * Vars.state.rules.unitDamage(unit.team);
+                    paramField.alpha = 1f;
 
-            }else{
+                }else{
 
-                float reach = paramField.radius + paramField.width;
-                float overlapDst = reach - unit.dst(paramPos.x,paramPos.y);
+                    float reach = paramField.radius + paramField.width;
+                    float overlapDst = reach - unit.dst(paramPos.x,paramPos.y);
 
-                if(overlapDst>0){
-                    //stop
-                    unit.vel.setZero();
-                    // get out
-                    unit.move(Tmp.v1.set(unit).sub(paramUnit).setLength(overlapDst + 0.01f));
+                    if(overlapDst>0){
+                        //stop
+                        unit.vel.setZero();
+                        // get out
+                        unit.move(Tmp.v1.set(unit).sub(paramUnit).setLength(overlapDst + 0.01f));
 
-                    if(Mathf.chanceDelta(0.5f*Time.delta)){
-                        Fx.circleColorSpark.at(unit.x,unit.y,paramUnit.team.color);
+                        if(Mathf.chanceDelta(0.5f*Time.delta)){
+                            Fx.circleColorSpark.at(unit.x,unit.y,paramUnit.team.color);
+                        }
                     }
                 }
+
+            }else if(unit.targetable){
+                unit.shieldUnit = paramUnit;
             }
         }
     };
@@ -156,6 +160,7 @@ public class ShieldArcAbility extends Ability{
         }
 
         boolean active = data > 0 && (unit.isShooting || !whenShooting);
+        unit.shieldUnit = unit;
         alpha = Math.max(alpha - Time.delta/10f, 0f);
 
         if(active){
@@ -166,7 +171,7 @@ public class ShieldArcAbility extends Ability{
 
             float reach = radius + width;
             Groups.bullet.intersect(paramPos.x - reach, paramPos.y - reach, reach * 2f, reach * 2f, shieldConsumer);
-            Units.nearbyEnemies(paramUnit.team, paramPos.x - reach, paramPos.y - reach, reach * 2f, reach * 2f, unitConsumer);
+            Units.nearby(null, paramPos.x - reach, paramPos.y - reach, reach * 2f, reach * 2f, unitConsumer);
         }else{
             widthScale = Mathf.lerpDelta(widthScale, 0f, 0.11f);
         }
