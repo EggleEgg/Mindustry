@@ -99,7 +99,7 @@ public class ShieldArcAbility extends Ability{
                     }
                 }
 
-            }else if(unit.targetable){
+            }else if(unit.type.targetable){
                 unit.shieldUnit = paramUnit;
             }
         }
