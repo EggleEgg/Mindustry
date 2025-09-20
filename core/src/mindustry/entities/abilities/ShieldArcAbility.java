@@ -100,7 +100,7 @@ public class ShieldArcAbility extends Ability{
                 }
 
             }else if(unit.type.targetable){
-                unit.shieldUnit = paramUnit;
+                unit.underShield = paramUnit;
             }
         }
     };
@@ -160,7 +160,7 @@ public class ShieldArcAbility extends Ability{
         }
 
         boolean active = data > 0 && (unit.isShooting || !whenShooting);
-        unit.shieldUnit = unit;
+        unit.underShield = unit;
         alpha = Math.max(alpha - Time.delta/10f, 0f);
 
         if(active){
