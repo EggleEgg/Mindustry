@@ -3947,6 +3947,9 @@ public class Blocks{
 
         ripple = new ItemTurret("ripple"){{
             requirements(Category.turret, with(Items.copper, 150, Items.graphite, 135, Items.titanium, 60));
+            float lifeRandMax = 1f + 0.08f;
+            float lifeRandMin = 1f - 0.08f;
+
             ammo(
                 Items.graphite, new ArtilleryBulletType(3f, 40){{
                     hitEffect = new MultiEffect(Fx.flakExplosion, Fx.shockwaveSmaller);
@@ -3961,8 +3964,8 @@ public class Blocks{
                     backColor = hitColor = trailColor = Pal.graphiteAmmoBack;
                     frontColor = Pal.graphiteAmmoFront;
                     despawnEffect = Fx.hitBulletColor;
-                    lifeScaleRandMax = 1.08f;
-                    lifeScaleRandMin = 0.95f;
+                    lifeScaleRandMax = lifeRandMax;
+                    lifeScaleRandMin = lifeRandMin;
                 }},
                 Items.silicon, new ArtilleryBulletType(3f, 40){{
                     hitEffect = new MultiEffect(Fx.flakExplosion, Fx.shockwaveSmaller);
@@ -3984,8 +3987,8 @@ public class Blocks{
                     despawnEffect = Fx.hitBulletColor;
                     backColor = hitColor = trailColor = Pal.siliconAmmoBack;
                     frontColor = Pal.siliconAmmoFront;
-                    lifeScaleRandMax = 1.08f;
-                    lifeScaleRandMin = 0.95f;
+                    lifeScaleRandMax = lifeRandMax;
+                    lifeScaleRandMin = lifeRandMin;
                 }},
                 Items.pyratite, new ArtilleryBulletType(3f, 48){{
                     hitEffect = new MultiEffect(Fx.blastExplosion, Fx.shockwave);
@@ -4004,8 +4007,8 @@ public class Blocks{
                     trailEffect = Fx.incendTrail;
                     ammoMultiplier = 4f;
                     despawnEffect = Fx.hitBulletColor;
-                    lifeScaleRandMax = 1.08f;
-                    lifeScaleRandMin = 0.95f;
+                    lifeScaleRandMax = lifeRandMax;
+                    lifeScaleRandMin = lifeRandMin;
                 }},
                 Items.blastCompound, new ArtilleryBulletType(2f, 40, "shell"){{
                     hitEffect = new MultiEffect(Fx.blastExplosion, Fx.shockwave);
@@ -4019,8 +4022,8 @@ public class Blocks{
                     splashDamage = 90f;
 
                     status = StatusEffects.blasted;
-                    lifeScaleRandMax = 1.08f;
-                    lifeScaleRandMin = 0.95f;
+                    lifeScaleRandMax = lifeRandMax;
+                    lifeScaleRandMin = lifeRandMin;
 
                     despawnEffect = Fx.hitBulletColor;
                     backColor = hitColor = trailColor = Pal.blastAmmoBack;
@@ -4048,17 +4051,17 @@ public class Blocks{
                     fragBullets = 15;
                     backColor = Pal.plastaniumBack;
                     frontColor = Pal.plastaniumFront;
-                    lifeScaleRandMax = 1.08f;
-                    lifeScaleRandMin = 0.95f;
+                    lifeScaleRandMax = lifeRandMax;
+                    lifeScaleRandMin = lifeRandMin;
                 }}
             );
 
             shoot = (new ShootHelix(){{
-                shots = 4;
-                time = 10f;
-                scl = 10f;
-                offsetScaleRandMax = 10f;
-                offsetScaleRandMin = 5f;
+                shots = 2;
+                time = 12f;
+                scl = 12f;
+                offsetScaleRandMax = 12f;
+                offsetScaleRandMin = 6f;
             }});
 
             targetAir = false;
