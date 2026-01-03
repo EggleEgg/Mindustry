@@ -4053,10 +4053,16 @@ public class Blocks{
                 }}
             );
 
+            shoot = (new ShootHelix(){{
+                shots = 4;
+                time = 10f;
+                scl = 10f;
+                offsetScaleRandMax = 10f;
+                offsetScaleRandMin = 5f;
+            }});
+
             targetAir = false;
             size = 3;
-            shoot.shots = 4;
-            inaccuracy = 11f;
             reload = 120f;
             ammoEjectBack = 5f;
             ammoUseEffect = Fx.casing3Double;
