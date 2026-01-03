@@ -1,0 +1,11 @@
+name: Pvp datapatch preset
+
+block: {
+    scorch: {
+        ammoTypes: {
+            pyratite: {
+                damage: 9000
+            }
+        }
+    }
+}

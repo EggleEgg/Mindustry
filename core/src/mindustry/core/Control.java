@@ -26,6 +26,7 @@ import mindustry.input.*;
 import mindustry.io.*;
 import mindustry.io.SaveIO.*;
 import mindustry.maps.Map;
+import mindustry.mod.*;
 import mindustry.maps.*;
 import mindustry.net.*;
 import mindustry.type.*;
@@ -150,6 +151,18 @@ public class Control implements ApplicationListener, Loadable{
             //make player admin on any load when hosting
             if(net.active() && net.server()){
                 player.admin = true;
+            }
+        });
+
+        Events.on(WorldLoadEvent.class, e -> {
+            String mode = Vars.state.rules.mode().name().toLowerCase();
+            if(mode != null && Vars.tree.get("datapatches/" + mode + ".json") != null){
+                try{
+                    state.patcher.apply(Seq.with(Vars.tree.get("datapatches/" + mode + ".json").readString()));
+                }catch(Exception ex){
+                    Log.err(ex);
+                    ui.showException("@editor.patches.importerror", ex);
+                }
             }
         });
 
