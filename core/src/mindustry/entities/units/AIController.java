@@ -214,7 +214,7 @@ public class AIController implements UnitController{
                 shoot = mount.target.within(mountX, mountY, wrange + (mount.target instanceof Sized s ? s.hitSize()/2f : 0f)) && shouldShoot();
 
                 if(unit.type.autoDropBombs && !shoot){
-                    if(bomberTarget == null || !bomberTarget.isAdded() || !bomberTarget.within(unit, unit.hitSize/2f + ((Sized)bomberTarget).hitSize()/2f)){
+                    if(bomberTarget == null || !bomberTarget.isAdded() || !bomberTarget.within(unit, unit.range() > 0 ? unit.range() : unit.hitSize/2f + ((Sized)bomberTarget).hitSize()/2f + weapon.bullet.splashDamageRadius)){
                         bomberTarget = Units.closestTarget(unit.team, unit.x, unit.y, unit.hitSize, u -> !u.isFlying(), t -> true);
                     }
                     shoot = bomberTarget != null;

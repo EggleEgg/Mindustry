@@ -1101,7 +1101,7 @@ public class UnitTypes{
             hitSize = 11f;
             targetAir = false;
             engineOffset = 7.8f;
-            range = 140f;
+            range = 44f;
             faceTarget = false;
             autoDropBombs = true;
             armor = 3f;
@@ -1111,23 +1111,24 @@ public class UnitTypes{
             ammoType = new ItemAmmoType(Items.graphite);
             omniMovement = false;
             rotateSpeed = 4.5f;
-            circleTargetRadius = 40f;
+            circleTargetRadius = 30f;
 
             moveSound = Sounds.loopThruster;
             moveSoundPitchMin = 0.6f;
             moveSoundVolume = 0.4f;
 
             weapons.add(new Weapon(){{
-                minShootVelocity = 1f;
                 x = 3f;
                 shootY = 0f;
-                reload = 12f;
+                reload = 50f;
                 shootCone = 180f;
                 ejectEffect = Fx.none;
                 inaccuracy = 15f;
                 ignoreRotation = true;
                 shootSound = Sounds.shootHorizon;
                 soundPitchMax = 1.2f;
+                shoot.shots = 2;
+                shoot.shotDelay = 12f;
                 bullet = new BombBulletType(27f, 25f){{
                     width = 10f;
                     height = 14f;
