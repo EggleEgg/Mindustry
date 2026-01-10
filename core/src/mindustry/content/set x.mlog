@@ -1,0 +1,583 @@
+print "Unit type to bind"
+set set.unit @vela
+print "Hp % threshold to retreat to heal. Set to 0 to disable"
+set h.thres 0
+print "Number of units to rally/group up before attacking. Set to 0 to disable"
+set n.rally 24
+print "Use unit boost for nova tree? If true consumes more processing power but units will check for passable tiles to drop and attack on"
+set boost 1
+print "Upscale unit range agaisnt buildings? If true consumes more processing power and units may lose dps for extra range (depends on set.unit)."
+set upscale.build 1
+print "Upscale unit range against enemies?"
+set upscale.en 0
+print "Attack enemies?"
+set attack.en 0
+print "Range to approach closest turret to rally on. Final value will account number of units and their size"
+set range.rally 70
+print "Minimum distance from enemy core to consider if alternate repair is safe"
+set ecore.range 70
+print "Use specific coords for units to retreat to heal. This will override auto repair coordinate checks. Make sure it is reachable by the unit"
+set x.r 0
+set y.r 0
+print "Bind air for ground-only units to find a reachable spot to retreat and repair, in order of priority"
+set radar.u1 @flare
+set radar.u2 @poly
+set radar.u3 @mega
+set radar.u4 @horizon
+print "Max range in tiles for ground units to scan if stuck on  walls"
+set getblock.range 10
+print "How often to check for some things in ms, like locate core, repair, rally coords, etc"
+set timer 3000
+print "End of config dont touch below <3"
+op rand u1 @maph @maph
+op mul u1 u1 @thisy
+op add u1 u1 @thisx
+op add u2 u1 1
+op add u3 u1 2
+sensor id set.unit @id
+sensor maxhp set.unit @maxHealth
+sensor size set.unit @size
+op mul h.thres h.thres maxhp
+op mul size size n.rally
+op sqrt size size n.rally
+op mul radius.rally size 1.5
+op mul radius.rally2 radius.rally 2
+op add range.rally range.rally radius.rally
+op add force.repair x.r y.r
+set cur.h.thres h.thres
+ubind set.unit
+jump 47 equal @unit 0
+ulocate building core true @copper x.c y.c found core
+sensor range @unit @range
+jump 175 greaterThan id 54
+op mul id id 2
+op add @counter @counter id
+set m.range 21
+jump 166 always 0 0
+set m.range 8
+jump 166 always 0 0
+set m.range 32
+jump 165 always 0 0
+set m.range 23
+jump 166 always 0 0
+set m.range 28
+jump 166 always 0 0
+set m.range 21
+jump 169 always 0 0
+set upscale.build 0
+jump 169 always 0 0
+set m.range 19
+jump 169 always 0 0
+set m.range 26
+jump 169 always 0 0
+set m.range 61.5
+jump 169 always 0 0
+print ""
+jump 556 always 0 0
+set m.range 16
+jump 172 always type @toxopid
+set m.range 11
+jump 173 always 0 0
+set m.range 10
+jump 173 always type @toxopid
+set m.range 29
+jump 172 always type @toxopid
+set m.range 16
+jump 173 always 0 0
+print ""
+jump 537 always type @quad
+set m.range 24
+jump 173 always 0 0
+set m.range 24
+jump 173 always 0 0
+set m.range 25
+jump 173 always 0 0
+set m.range 32
+jump 173 always 0 0
+print ", what the hell are you doing"
+jump -1 always 0 0
+set m.range 26
+jump 173 always 0 0
+set m.range 26
+jump 173 always 0 0
+print ""
+jump 537 always type @quad
+print ""
+jump -1 always 0 0
+set m.range 27
+jump 162 always 0 0
+set m.range 35
+jump 162 always 0 0
+set m.range 35
+jump 162 always 0 0
+set upscale.build 0
+jump 162 always 0 0
+set m.range 68
+jump 162 always 0 0
+set m.range 22
+jump 164 always 0 0
+set upscale.build 0
+jump 164 always 0 0
+set m.range 30
+jump 162 always 0 0
+set upscale.build 0
+jump 162 always 0 0
+set m.range 43
+jump 162 always 0 0
+set m.range 21
+jump 173 always 0 0
+set m.range 24
+jump 173 always 0 0
+set m.range 33
+jump 173 always 0 0
+set m.range 22
+jump 166 always 0 0
+set m.range 23
+jump 166 always 0 0
+set m.range 27
+jump 166 always 0 0
+set m.range 24
+jump 166 always 0 0
+set m.range 47
+jump 166 always 0 0
+set m.range 19
+jump 172 always 0 0
+set m.range 23
+jump 173 always 0 0
+set m.range 46
+jump 173 always 0 0
+set upscale.build 0
+jump 173 always 0 0
+set m.range 65
+jump 172 always 0 0
+set m.range 20
+jump 166 always 0 0
+set m.range 15
+jump 173 always 0 0
+set m.range 25
+jump 173 always 0 0
+set m.range 50
+jump 172 always 0 0
+set m.range 63
+jump 172 always 0 0
+set set.boat 1
+jump 166 always 0 0
+set set.boat 1
+set shoot.ground 1
+set set.ground 1
+set boost 0
+jump 173 always 0 0
+jump 173 equal boost 1
+set set.ground 1
+jump 173 always 0 0
+set shoot.ground 1
+op div max.range range m.range
+jump 176 equal upscale.build 1
+set m.range range
+op add within.range m.range 0.5
+set cur.m.range m.range
+op min getblock.range getblock.range 27.5
+op min getblock.range getblock.range range
+jump 332 lessThan @time nextime
+jump 322 greaterThanEq force.repair h.thres
+ulocate building repair false @copper x.r1 y.r1 found repair
+sensor power repair1 @powerNetIn
+jump 188 greaterThan power 0
+sensor power repair @powerNetIn
+jump 321 equal power 0
+jump 221 always 0 0
+sensor power repair @powerNetIn
+jump 230 equal power 0
+op sub dx x.r1 x.c
+op sub dy y.r1 y.c
+op len d1 dx dy
+op sub dx x.r2 x.c
+op sub dy y.r2 y.c
+op len d2 dx dy
+jump 230 greaterThanEq d1 d2
+op sub dx x.r2 x.r1
+op sub dy y.r2 y.r1
+op sub num1 x.c x.r1
+op sub num2 y.c y.r1
+op mul num1 num1 dx
+op mul num2 num2 dy
+op add t num1 num2
+op pow dx2 dx 2
+op pow dy2 dy 2
+op add denom dx2 dy2
+op div t t denom
+jump 212 lessThanEq t 0
+jump 213 lessThan t 1
+set t 1
+jump 213 always 0 0
+set t 0
+op mul dx t dx
+op mul dy t dy
+op add x x.r1 dx
+op add y y.r1 dy
+op sub x x x.c
+op sub y y y.c
+op len d x y
+jump 230 lessThan d ecore.range
+set repair1 repair
+jump 227 equal set.ground 0
+set x.r2 x.r1
+set y.r2 y.r1
+sensor repair.range repair1 @range
+jump 231 always t.ground 1
+set x.r x.r1
+set y.r y.r1
+jump 319 always t.ground 1
+jump 322 equal set.ground 0
+ubind u.radar
+sensor dead u.radar @dead
+jump 261 equal dead 0
+set i -2
+op add i i 2
+op add @counter @counter i
+set cur.radar.u radar.u1
+jump 246 always 0 0
+set cur.radar.u radar.u2
+jump 246 always 0 0
+set cur.radar.u radar.u3
+jump 246 always 0 0
+set cur.radar.u radar.u4
+jump 246 always 0 0
+jump 321 always @unit ufirst
+ubind cur.radar.u
+jump 235 equal @unit 0
+set ufirst @unit
+jump 252 always 0 0
+ubind cur.radar.u
+jump 235 equal @unit ufirst
+sensor controlled @unit @controller
+jump 255 equal controlled @this
+jump 250 notEqual controlled @unit
+ucontrol flag u1 0 0 0 0
+sensor range @unit @range
+op min range range 27.5
+op mul max.steps range 2
+set u.radar @unit
+ucontrol boost 1 y.r 0 0 0
+ucontrol pathfind x.r2 y.r2 0 0 0
+ucontrol within x.r2 y.r2 1 within 0
+jump 321 equal within 0
+jump 267 equal same.type 0
+ucontrol getBlock x.r y.r type building floor
+jump 319 equal type same.type
+set step.size 1
+set x x.r2
+set y y.r2
+op add steps steps 1
+jump 279 notEqual steps step.size
+op mod dir.change direction 2
+jump 275 notEqual dir.change 1
+op add step.size step.size 1
+op add direction direction 1
+op mod direction direction 4
+set steps 0
+jump 321 greaterThan step.size max.steps
+op mul d direction 2
+op add @counter @counter d
+op add x x 1
+jump 288 always 0 0
+op sub y y 1
+jump 288 always 0 0
+op sub x x 1
+jump 288 always 0 0
+op add y y 1
+ucontrol getBlock x y type building floor
+jump 293 equal type @air
+sensor solid type @solid
+jump 270 equal solid 1
+jump 312 equal set.boat 0
+jump 304 equal set.boat 0
+jump 312 equal floor @shallow-water
+jump 312 equal floor @tainted-water
+jump 312 equal floor @darksand-tainted-water
+jump 312 equal floor @sand-water
+jump 312 equal floor @deep-tainted-water
+jump 312 equal floor @deep-water
+jump 312 equal floor @molten-slag
+jump 312 equal floor @tar
+jump 312 equal floor @pooled-cryofluid
+jump 270 always floor @deep-water
+jump 270 equal floor @deep-water
+jump 270 equal floor @deep-tainted-water
+jump 270 equal floor @molten-slag
+jump 270 equal floor @tar
+jump 270 equal floor @pooled-cryofluid
+jump 270 equal floor @arkycite-floor
+jump 270 equal floor @space
+jump 270 equal floor @empty
+op sub dx x x.r2
+op sub dy y y.r2
+op len d dx dy
+jump 321 greaterThan d repair.range
+set x.r x
+set y.r y
+set same.type type
+set cur.h.thres h.thres
+jump 322 always 0 0
+set cur.h.thres 0
+jump 331 lessThanEq n.rally 0
+sensor dead u.rally @dead
+jump 330 equal dead 1
+jump 331 equal rally.status 0
+ubind u.rally
+sensor x.rally @unit @x
+sensor y.rally @unit @y
+jump 331 always @unit 0
+set u.rally 0
+op add nextime @time timer
+ubind set.unit
+sensor flag @unit @flag
+select @counter equal flag u1 jump1 @counter
+jump 408 equal flag u1
+select @counter equal flag u2 jump2 @counter
+jump 411 equal flag u2
+select @counter equal flag u3 jump3 @counter
+jump 358 equal flag u3
+sensor controlled @unit @controller
+jump 344 equal controlled @this
+jump 180 notEqual controlled @unit
+set @counter jump4
+jump 408 lessThanEq n.rally 0
+jump 358 notEqual u.rally 0
+set u.rally @unit
+ucontrol flag u3 0 0 0 0
+jump 352 equal cur.h.thres 0
+set x.rally x.r
+set y.rally y.r
+jump 355 always 0 0
+ulocate building turret true @copper x.rally y.rally found building
+jump 355 notEqual found 0
+ulocate building core true @copper x.rally y.rally found building
+ucontrol boost boost 0 0 0 0
+ucontrol pathfind x.rally y.rally 0 0 0
+jump 360 always 0 0
+jump 369 notEqual @unit u.rally
+jump 365 equal rally.status 1
+ucontrol within x.rally y.rally range.rally rally.status 0
+select @counter equal rally.status 0 jump5 @counter
+jump 389 equal rally.status 0
+ucontrol flag 0 0 0 0 0
+ucontrol unbind 0 0 0 0 0
+set cur.n.rally 1
+jump 180 always rally.status 0
+op add set.jump @counter 1
+set @counter jump.return
+jump 386 equal rally.status 0
+ucontrol within x.rally y.rally radius.rally within 0
+jump 386 equal within 0
+ucontrol flag 0 0 0 0 0
+ucontrol unbind 0 0 0 0 0
+op add cur.n.rally cur.n.rally 1
+jump 180 lessThan cur.n.rally n.rally
+ubind set.unit
+set ufirst @unit
+set u.rally 0
+jump 382 always 0 0
+ubind set.unit
+jump 180 equal @unit ufirst
+ucontrol within x.rally y.rally radius.rally2 within 0
+jump 380 equal within 0
+ucontrol flag u1 0 0 0 0
+jump 380 always @unit ufirst
+ucontrol flag u3 0 0 0 0
+op add set.jump @counter 1
+set @counter jump.return
+jump 397 equal attack.en 0
+uradar enemy any any distance 0 1 enemy
+jump 393 always attack.en 0
+uradar enemy ground any distance 0 1 enemy
+jump 397 equal enemy 0
+jump 429 always enemy 1
+op add set.jump @counter 1
+set @counter jump.return
+ucontrol targetp 0 0 1 0 0
+ucontrol boost boost 0 0 0 0
+sensor hp @unit @health
+jump 404 greaterThan hp cur.h.thres
+ucontrol flag u2 outy 1 0 0
+ucontrol pathfind x.r y.r 1 0 0
+jump 180 always hp cur.h.thres
+ucontrol pathfind x.rally y.rally 0 0 0
+jump 180 always hp cur.h.thres
+op add set.jump @counter 1
+set @counter jump.return
+sensor hp @unit @health
+jump 423 greaterThan hp cur.h.thres
+ucontrol flag u2 outy 1 0 0
+sensor hp @unit @health
+select @counter equal hp maxhp jump7 @counter
+jump 418 equal hp maxhp
+ucontrol targetp 0 0 1 0 0
+ucontrol boost boost 0 0 0 0
+ucontrol pathfind x.r y.r 1 0 0
+jump 180 always controlled @unit
+jump 369 greaterThan n.rally 0
+ucontrol flag u1 outy 1 0 0
+set @counter jump.return
+op add set.jump @counter 1
+set @counter jump.return
+jump 436 equal attack.en 0
+uradar enemy any any distance 0 1 enemy
+jump 427 equal shoot.ground 0
+uradar enemy ground any distance 0 1 enemy
+jump 436 equal enemy 0
+select @counter equal hp maxhp @counter b
+sensor x.e enemy @x
+sensor y.e enemy @y
+jump 456 equal upscale.en 1
+jump 504 equal boost 0
+set x.s x.e
+set y.s y.e
+jump 467 always upscale 0
+ulocate building core true @copper x.c y.c found core
+ucontrol within x.c y.c within.range within 0
+jump 446 equal within 0
+set x.e x.c
+set y.e y.c
+jump 456 equal upscale.build 1
+jump 507 equal boost 0
+set x.s x.c
+set y.s y.c
+jump 467 always upscale 0
+ulocate building turret true @copper x.e y.e found turret
+ucontrol within x.e y.e within.range within 0
+jump 515 equal within 0
+jump 456 equal upscale.build 1
+jump 507 equal boost 0
+set x.s x.e
+set y.s y.e
+jump 467 always 0 0
+op add set.jump @counter 1
+set @counter jump.return
+sensor x.u @unit @x
+sensor y.u @unit @y
+op sub dx x.e x.u
+op mul px dx max.range
+op sub dy y.e y.u
+op mul py dy max.range
+op add x.s x.u px
+op add y.s y.u py
+set @counter aaa
+op add set.jump @counter 1
+set @counter jump.return
+sensor cur.boost @unit @boosting
+jump 511 equal cur.boost 0
+uradar ground any any distance 0 1 unit
+sensor x unit @x
+sensor y unit @y
+ucontrol within x y size within 0
+jump 476 equal within 1
+set cur.m.range m.range
+jump 477 always within 0
+op sub cur.m.range m.range size
+set d.cur 0
+op sub dx x.e x
+op sub dy y.e y
+op div angle dy dx
+op atan angle angle 0
+op cos step.dx angle 0
+op sin step.dy angle 0
+op add d.cur d.cur 1
+jump 516 greaterThan d.cur m.range
+op add x x step.dx
+op add y y step.dy
+ucontrol getBlock x y type building floor
+jump 493 equal type @air
+sensor solid type @solid
+jump 484 equal solid 1
+jump 501 always solid 1
+jump 484 equal floor @deep-water
+jump 484 equal floor @molten-slag
+jump 484 equal floor @tar
+jump 484 equal floor @pooled-cryofluid
+jump 484 equal floor @deep-tainted-water
+jump 484 equal floor @arkycite-floor
+jump 484 equal floor @space
+jump 484 equal floor @empty
+ucontrol move x y 0 0 0
+ucontrol boost 0 y 0 0 0
+jump 180 always controlled @unit
+ucontrol idle x y m.range 0 0
+ucontrol targetp enemy 1 1 0 0
+jump 180 always controlled @unit
+ucontrol idle x y m.range 0 0
+ucontrol approach x.e y.e cur.m.range 0 0
+ucontrol target x.e y.e 1 0 0
+jump 180 always controlled @unit
+ucontrol idle x y 0 0 0
+ucontrol approach x.e y.e cur.m.range 0 0
+ucontrol target x.s y.s 1 0 0
+jump 180 always controlled @unit
+ucontrol boost boost 0 1 0 0
+ucontrol targetp @unit 0 0 0 0
+ucontrol autoPathfind x.c y.c 0 0 0
+jump 180 equal set.ground 0
+sensor x @unit @x
+sensor y @unit @y
+set d.cur 0
+op sub dx x.c x
+op sub dy y.c y
+op div angle dy dx
+op atan angle angle 0
+op cos step.dx angle 0
+op sin step.dy angle 0
+op add d.cur d.cur 1
+jump 180 greaterThan d.cur getblock.range
+op add x x step.dx
+op add x x step.dy
+ucontrol getBlock x y type building floor
+sensor team building @team
+jump 528 lessThanEq team 1
+ucontrol target x y 1 0 0
+jump 180 always controlled @unit
+ubind set.unit
+sensor flag @unit @flag
+jump 544 equal flag u1
+sensor controlled @unit @controller
+jump 543 equal controlled @this
+jump 537 notEqual controlled @unit
+ucontrol flag u1 0 0 0 0
+ucontrol targetp @unit 1 0 0 0
+ulocate building turret true @copper x.e y.e found turret
+ucontrol within x.e y.e range within 0
+jump 551 equal within 1
+ulocate building core true @copper x.e y.e found core
+ucontrol within x.e y.e range within 0
+jump 554 equal within 0
+ucontrol idle 0 0 0 0 0
+ucontrol approach x.e y.e range 0 0
+jump 537 always 0 0
+ucontrol pathfind x.e y.e 0 0 0
+jump 537 always 0 0
+ubind set.unit
+sensor flag @unit @flag
+jump 563 equal flag u1
+sensor controlled @unit @controller
+jump 562 equal controlled @this
+jump 556 notEqual controlled @unit
+ucontrol flag u1 0 0 0 0
+ulocate building core true @copper x.e y.e found core
+ucontrol autoPathfind x.e cy range 0 0
+sensor x.u @unit @x
+sensor y.u @unit @y
+op sub x x.e x.u
+op sub y y.e y.u
+op len len x y
+op div len 2 len
+op mul x x len
+op add x x x.u
+op mul y y len
+op add y y y.u
+ucontrol getBlock cx3 cy3 type building floor
+jump 556 equal building 0
+sensor bteam building @team
+sensor uteam @unit @team
+jump 556 equal bteam uteam
+ucontrol targetp @unit 1 0 0 0
+jump 556 always bteam uteam
+print "By Egg"
