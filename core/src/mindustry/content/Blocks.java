@@ -4251,7 +4251,7 @@ public class Blocks{
         }};
 
         spectre = new ItemTurret("spectre"){{
-            requirements(Category.turret, with(Items.copper, 675, Items.graphite, 225, Items.surgeAlloy, 180, Items.plastanium, 130, Items.thorium, 180));
+            requirements(Category.turret, with(Items.copper, 680, Items.graphite, 230, Items.surgeAlloy, 180, Items.plastanium, 130, Items.thorium, 180));
             ammo(
                 Items.graphite, new BasicBulletType(7.5f, 50){{
                     hitSize = 4.8f;
@@ -4318,7 +4318,7 @@ public class Blocks{
         }};
 
         meltdown = new LaserTurret("meltdown"){{
-            requirements(Category.turret, with(Items.copper, 900, Items.lead, 260, Items.graphite, 225, Items.surgeAlloy, 240, Items.silicon, 240));
+            requirements(Category.turret, with(Items.copper, 900, Items.lead, 260, Items.graphite, 230, Items.surgeAlloy, 240, Items.silicon, 240));
             shootEffect = Fx.shootBigSmoke2;
             shootCone = 40f;
             recoil = 4f;
