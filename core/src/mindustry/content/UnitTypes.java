@@ -623,7 +623,8 @@ public class UnitTypes{
 
                 shootStatusDuration = 60f * 2f;
                 shootStatus = StatusEffects.unmoving;
-                shoot.firstShotDelay = Fx.greenLaserCharge.lifetime;
+                shoot.firstShotDelay = 100f;
+                shoot.firstShotDelayMax = 2f;
                 parentizeEffects = true;
 
                 bullet = new LaserBulletType(){{
@@ -1906,11 +1907,11 @@ public class UnitTypes{
         }};
 
         omura = new UnitType("omura"){{
-            health = 22000;
-            speed = 0.62f;
+            health = 19000;
+            speed = 0.55f;
             drag = 0.18f;
             hitSize = 58f;
-            armor = 16f;
+            armor = 10f;
             accel = 0.19f;
             rotateSpeed = 0.9f;
             faceTarget = false;
@@ -1926,8 +1927,8 @@ public class UnitTypes{
             trailScl = 3.5f;
 
             weapons.add(new Weapon("omura-cannon"){{
-                reload = 110f;
-                cooldownTime = 90f;
+                reload = 165f;
+                cooldownTime = 0.8f * 165f;
                 mirror = false;
                 x = 0f;
                 y = -3.5f;
@@ -1938,6 +1939,8 @@ public class UnitTypes{
                 recoil = 10.5f;
                 shadow = 50f;
                 shootSound = Sounds.shootOmura;
+                shoot.firstShotDelay = 20f;
+                shoot.firstShotDelayMax = 8f;
 
                 ejectEffect = Fx.none;
 
@@ -1950,7 +1953,7 @@ public class UnitTypes{
                     hitEffect = Fx.massiveExplosion;
                     smokeEffect = Fx.shootBig2;
                     damage = 1250;
-                    pierceDamageFactor = 0.5f;
+                    pierceDamageFactor = 0.75f;
                 }};
             }});
         }};

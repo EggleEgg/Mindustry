@@ -4251,7 +4251,7 @@ public class Blocks{
         }};
 
         spectre = new ItemTurret("spectre"){{
-            requirements(Category.turret, with(Items.copper, 900, Items.graphite, 300, Items.surgeAlloy, 250, Items.plastanium, 175, Items.thorium, 250));
+            requirements(Category.turret, with(Items.copper, 675, Items.graphite, 225, Items.surgeAlloy, 180, Items.plastanium, 130, Items.thorium, 180));
             ammo(
                 Items.graphite, new BasicBulletType(7.5f, 50){{
                     hitSize = 4.8f;
@@ -4318,7 +4318,7 @@ public class Blocks{
         }};
 
         meltdown = new LaserTurret("meltdown"){{
-            requirements(Category.turret, with(Items.copper, 1200, Items.lead, 350, Items.graphite, 300, Items.surgeAlloy, 325, Items.silicon, 325));
+            requirements(Category.turret, with(Items.copper, 900, Items.lead, 260, Items.graphite, 225, Items.surgeAlloy, 240, Items.silicon, 240));
             shootEffect = Fx.shootBigSmoke2;
             shootCone = 40f;
             recoil = 4f;
@@ -6286,15 +6286,15 @@ public class Blocks{
         }};
 
         exponentialReconstructor = new Reconstructor("exponential-reconstructor"){{
-            requirements(Category.units, with(Items.lead, 2000, Items.silicon, 1000, Items.titanium, 2000, Items.thorium, 750, Items.plastanium, 450, Items.phaseFabric, 600));
+            requirements(Category.units, with(Items.lead, 1300, Items.silicon, 900, Items.titanium, 1300, Items.thorium, 500, Items.plastanium, 300, Items.phaseFabric, 300));
 
             size = 7;
             consumePower(13f);
-            consumeItems(with(Items.silicon, 850, Items.titanium, 750, Items.plastanium, 650));
+            consumeItems(with(Items.silicon, 560, Items.titanium, 500, Items.plastanium, 430));
             consumeLiquid(Liquids.cryofluid, 1f);
             createSound = Sounds.unitCreateBig;
 
-            constructTime = 60f * 60f * 1.5f;
+            constructTime = 60f * 60f;
 
             upgrades.addAll(
                 new UnitType[]{UnitTypes.zenith, UnitTypes.antumbra},
@@ -6312,10 +6312,10 @@ public class Blocks{
 
             size = 9;
             consumePower(25f);
-            consumeItems(with(Items.silicon, 1000, Items.plastanium, 600, Items.surgeAlloy, 500, Items.phaseFabric, 350));
+            consumeItems(with(Items.silicon, 660, Items.plastanium, 400, Items.surgeAlloy, 330, Items.phaseFabric, 230));
             consumeLiquid(Liquids.cryofluid, 3f);
 
-            constructTime = 60f * 60f * 4;
+            constructTime = 60f * 160f;
             createSound = Sounds.unitCreateBig;
 
             upgrades.addAll(

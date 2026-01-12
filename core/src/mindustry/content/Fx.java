@@ -771,7 +771,7 @@ public class Fx{
         Drawf.light(e.x, e.y, circleRad * 1.6f, Pal.heal, e.fout());
     }),
 
-    greenLaserCharge = new Effect(80f, 100f, e -> {
+    greenLaserCharge = new Effect(100f, 100f, e -> {
         color(Pal.heal);
         stroke(e.fin() * 2f);
         Lines.circle(e.x, e.y, 4f + e.fout() * 100f);
