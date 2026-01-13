@@ -749,7 +749,7 @@ public class Turret extends ReloadTurret{
                     type.chargeEffect.at(bulletX, bulletY, rotation);
                     });
                 }else{
-                    if(shoot.firstShotRand() < 1f && bullet.scaleChargeEffect) bullet.chargeEffect.lifetime = delay;
+                    if(shoot.firstShotRand() < 1f && type.scaleChargeEffect) type.chargeEffect.lifetime = delay;
                     chargeSound.at(bulletX, bulletY, Mathf.random(soundPitchMin, soundPitchMax));
                     type.chargeEffect.at(bulletX, bulletY, rotation);
                 }
