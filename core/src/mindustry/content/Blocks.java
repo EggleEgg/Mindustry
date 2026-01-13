@@ -2670,15 +2670,15 @@ public class Blocks{
             requirements(Category.power, with(Items.beryllium, 30, Items.oxide, 10, Items.silicon, 10));
             size = 3;
             consumesPower = outputsPower = true;
-            range = 23;
+            range = 30;
             scaledHealth = 90;
             fogRadius = 2;
 
-            consumePowerBuffered(40000f);
+            consumePowerBuffered(12000f);
         }};
 
         beamLink = new LongPowerNode("beam-link"){{
-            requirements(Category.power, with(Items.beryllium, 250, Items.silicon, 250, Items.oxide, 150, Items.carbide, 75, Items.surgeAlloy, 75, Items.phaseFabric, 75));
+            requirements(Category.power, with(Items.beryllium, 120, Items.silicon, 120, Items.oxide, 75, Items.carbide, 50, Items.surgeAlloy, 25, Items.phaseFabric, 25));
             size = 3;
             maxNodes = 1;
             laserRange = 500f;
@@ -2688,6 +2688,9 @@ public class Blocks{
             laserColor2 = Color.valueOf("ffd9c2");
             laserScale = 0.8f;
             scaledHealth = 130;
+            
+            consumePowerBuffered(9000f);
+
         }};
 
         turbineCondenser = new ThermalGenerator("turbine-condenser"){{

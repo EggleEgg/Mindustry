@@ -7,6 +7,7 @@ import arc.math.*;
 import arc.util.*;
 import mindustry.annotations.Annotations.*;
 import mindustry.graphics.*;
+import mindustry.world.meta.BlockStatus;
 
 public class LongPowerNode extends PowerNode{
     public @Load("@-glow") TextureRegion glow;
@@ -16,6 +17,7 @@ public class LongPowerNode extends PowerNode{
     public LongPowerNode(String name){
         super(name);
         drawRange = false;
+        outputsPower = consumesPower = true;
     }
 
     @Override
@@ -43,6 +45,14 @@ public class LongPowerNode extends PowerNode{
             if(warmup > 0.001f){
                 Drawf.additive(glow, Tmp.c1.set(glowColor).mula(warmup).mula(1f - glowMag + Mathf.absin(glowScl, glowMag)), x, y);
             }
+        }
+
+        @Override
+        public BlockStatus status(){
+            float balance = power.graph.getPowerBalance();
+            if(balance > 0f) return BlockStatus.active;
+            if(balance < 0f && power.graph.getLastPowerStored() > 0) return BlockStatus.noOutput;
+            return BlockStatus.noInput;
         }
     }
 }
