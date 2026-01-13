@@ -742,8 +742,17 @@ public class Turret extends ReloadTurret{
             bulletY = y + Angles.trnsy(rotation - 90, shootX, shootY);
 
             if(shoot.firstShotDelay > 0){
-                chargeSound.at(bulletX, bulletY, Mathf.random(soundPitchMin, soundPitchMax));
-                type.chargeEffect.at(bulletX, bulletY, rotation);
+                float delay = shoot.firstShotRand() * shoot.firstShotDelay;
+                if(shoot.firstShotRand() > 1f){
+                    Time.run(delay - shoot.firstShotDelay, () -> {
+                    chargeSound.at(bulletX, bulletY, Mathf.random(soundPitchMin, soundPitchMax));
+                    type.chargeEffect.at(bulletX, bulletY, rotation);
+                    });
+                }else{
+                    if(shoot.firstShotRand() < 1f && bullet.scaleChargeEffect) bullet.chargeEffect.lifetime = delay;
+                    chargeSound.at(bulletX, bulletY, Mathf.random(soundPitchMin, soundPitchMax));
+                    type.chargeEffect.at(bulletX, bulletY, rotation);
+                }
             }
 
             ShootPattern pattern = type.shootPattern != null ? type.shootPattern : shoot;

@@ -466,9 +466,19 @@ public class Weapon implements Cloneable{
         unit.apply(shootStatus, shootStatusDuration);
 
         if(shoot.firstShotDelay > 0){
-            mount.charging = true;
-            chargeSound.at(shootX, shootY, Mathf.random(soundPitchMin, soundPitchMax));
-            bullet.chargeEffect.at(shootX, shootY, rotation, bullet.keepVelocity || parentizeEffects ? unit : null);
+            float delay = shoot.firstShotRand() * shoot.firstShotDelay;
+            if(shoot.firstShotRand() > 1f){
+                Time.run(delay - shoot.firstShotDelay, () -> {
+                    bullet.chargeEffect.at(shootX, shootY, rotation, bullet.keepVelocity || parentizeEffects ? unit : null);
+                    mount.charging = true;
+                    chargeSound.at(shootX, shootY, Mathf.random(soundPitchMin, soundPitchMax));
+                });
+            }else{
+                if(shoot.firstShotRand() < 1f && bullet.scaleChargeEffect) bullet.chargeEffect.lifetime = delay;
+                bullet.chargeEffect.at(shootX, shootY, rotation, bullet.keepVelocity || parentizeEffects ? unit : null);
+                mount.charging = true;
+                chargeSound.at(shootX, shootY, Mathf.random(soundPitchMin, soundPitchMax));
+            }
         }
 
         shoot.shoot(mount.barrelCounter, (xOffset, yOffset, angle, delay, mover) -> {

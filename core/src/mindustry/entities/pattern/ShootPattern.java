@@ -24,8 +24,12 @@ public class ShootPattern implements Cloneable{
     /** Called on a single "trigger pull". This function should call the handler with any bullets that result. */
     public void shoot(int totalShots, BulletHandler handler){
         for(int i = 0; i < shots; i++){
-            handler.shoot(0, 0, 0, firstShotDelay * (firstShotDelayMin != 1f || firstShotDelayMax != 1f ? Mathf.random(firstShotDelayMin, firstShotDelayMax) : 1f) + shotDelay * i);
+            handler.shoot(0, 0, 0, firstShotDelay * firstShotRand() + shotDelay * i);
         }
+    }
+
+    public float firstShotRand(){
+        return firstShotDelayMin != 1f || firstShotDelayMax != 1f ? Mathf.random(firstShotDelayMin, firstShotDelayMax) : 1f;
     }
 
     /** Subclasses should override this to flip its sides. */

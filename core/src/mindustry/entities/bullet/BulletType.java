@@ -77,6 +77,8 @@ public class BulletType extends Content implements Cloneable{
     public @Nullable ShootPattern shootPattern = null;
     /** Effect created when charging starts; only usable in single-shot weapons with a firstShotDelay / shotDelay. */
     public Effect chargeEffect = Fx.none;
+    /** Scale effect created when charging starts when firstShotDelayMin < 1 */
+    public boolean scaleChargeEffect = true;
     /** Extra smoke effect created when shooting. */
     public Effect smokeEffect = Fx.shootSmallSmoke;
     /** Overrides the shoot sound in turrets if set. Does nothing in units, as they can't have multiple ammo types. */
