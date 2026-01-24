@@ -2674,7 +2674,7 @@ public class Blocks{
             scaledHealth = 90;
             fogRadius = 2;
 
-            consumePowerBuffered(12000f);
+            consumePowerBuffered(40000f);
         }};
 
         beamLink = new LongPowerNode("beam-link"){{
@@ -2689,8 +2689,7 @@ public class Blocks{
             laserScale = 0.8f;
             scaledHealth = 130;
             
-            consumePowerBuffered(9000f);
-
+            consumePowerBuffered(32000f);
         }};
 
         turbineCondenser = new ThermalGenerator("turbine-condenser"){{
@@ -6335,7 +6334,7 @@ public class Blocks{
             requirements(Category.units, with(Items.lead, 30, Items.copper, 30, Items.silicon, 20));
             repairSpeed = 0.45f;
             repairRadius = 60f;
-            beamWidth = 0.73f;
+            toWidth = 0.73f;
             powerUse = 1f;
             pulseRadius = 5f;
             ambientSoundVolume = 0.9f;

@@ -7,7 +7,7 @@ import arc.math.*;
 import arc.util.*;
 import mindustry.annotations.Annotations.*;
 import mindustry.graphics.*;
-import mindustry.world.meta.BlockStatus;
+import mindustry.world.meta.*;
 
 public class LongPowerNode extends PowerNode{
     public @Load("@-glow") TextureRegion glow;
