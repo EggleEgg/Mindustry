@@ -6334,7 +6334,7 @@ public class Blocks{
             requirements(Category.units, with(Items.lead, 30, Items.copper, 30, Items.silicon, 20));
             repairSpeed = 0.45f;
             repairRadius = 60f;
-            toWidth = 0.73f;
+            beamWidth = 0.73f;
             powerUse = 1f;
             pulseRadius = 5f;
             ambientSoundVolume = 0.9f;
