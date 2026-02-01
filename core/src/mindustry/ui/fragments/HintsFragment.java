@@ -222,6 +222,15 @@ public class HintsFragment{
             () -> Core.input.keyRelease(Binding.diagonalPlacement) || (mobile && Core.settings.getBool("swapdiagonal"))
         ),
 
+        plastaniumConveyor(
+            () -> control.input.block == Blocks.plastaniumConveyor && Blocks.unloader.unlockedNow()
+        ),
+
+        bridgeWeaving(
+            () -> control.input.block == Blocks.itemBridge || control.input.block == Blocks.phaseConveyor,
+            () -> Core.input.keyDown(Binding.bridgeWeaving) || mobile
+        ),
+
         boost(visibleDesktop,
             () -> !player.dead() && player.unit().type.canBoost,
             () -> Core.input.keyDown(Binding.boost)
