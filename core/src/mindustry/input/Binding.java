@@ -27,6 +27,7 @@ public class Binding{
     rotate = KeyBind.add("rotate", new Axis(KeyCode.scroll)),
     rotatePlaced = KeyBind.add("rotateplaced", KeyCode.r),
     diagonalPlacement = KeyBind.add("diagonal_placement", KeyCode.controlLeft),
+    bridgeWeaving = KeyBind.add("bridge_weaving", KeyCode.shiftLeft),
     pick = KeyBind.add("pick", KeyCode.mouseMiddle),
 
     rebuildSelect = KeyBind.add("rebuild_select", KeyCode.b),

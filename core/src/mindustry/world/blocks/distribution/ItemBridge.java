@@ -1,5 +1,6 @@
 package mindustry.world.blocks.distribution;
 
+import arc.*;
 import arc.graphics.*;
 import arc.graphics.g2d.*;
 import arc.math.*;
@@ -9,8 +10,10 @@ import arc.util.*;
 import arc.util.io.*;
 import mindustry.annotations.Annotations.*;
 import mindustry.core.*;
+import mindustry.content.*;
 import mindustry.entities.*;
 import mindustry.entities.units.*;
+import mindustry.game.*;
 import mindustry.gen.*;
 import mindustry.graphics.*;
 import mindustry.input.*;
@@ -61,6 +64,9 @@ public class ItemBridge extends Block{
         config(Point2.class, (ItemBridgeBuild tile, Point2 i) -> tile.link = Point2.pack(i.x + tile.tileX(), i.y + tile.tileY()));
         //integer is not
         config(Integer.class, (ItemBridgeBuild tile, Integer i) -> tile.link = i);
+
+        //no reason to keep this in memory
+        Events.on(EventType.ResetEvent.class, e -> lastBuild = null);
     }
 
     @Override
@@ -173,10 +179,27 @@ public class ItemBridge extends Block{
 
     @Override
     public void handlePlacementLine(Seq<BuildPlan> plans){
-        for(int i = 0; i < plans.size - 1; i++){
+        float weaveTimer = 0f;
+        boolean shift = weaveTimer >= 2f || Core.input.keyDown(Binding.bridgeWeaving);
+
+        if(!Core.input.keyDown(Binding.bridgeWeaving) && mobile){
+            if(Core.input.isTouched()){
+                weaveTimer += Time.toSeconds;
+            }
+        }else{
+            weaveTimer = 0f;
+        }
+
+        for(int i = 0; i < plans.size; i++){
             var cur = plans.get(i);
-            var next = plans.get(i + 1);
-            if(positionsValid(cur.x, cur.y, next.x, next.y)){
+            var next = plans.get(Math.min(
+                shift ?
+                    i + range >= plans.size ?
+                        plans.size - 1 - (plans.size - i - 1) : // Multiweave for phase
+                        i + range : // Normal weaving - Link as far down as possible
+                    i + 1, // No weaving - Link to next only
+                plans.size - 1));
+            if(positionsValid(cur.x, cur.y, next.x, next.y) && (shift || !cur.samePos(next))){
                 cur.config = new Point2(next.x - cur.x, next.y - cur.y);
             }
         }
@@ -184,6 +207,7 @@ public class ItemBridge extends Block{
 
     @Override
     public void changePlacementPath(Seq<Point2> points, int rotation){
+        if(Core.input.keyDown(Binding.bridgeWeaving)) return; // Bridge weaving is enabled when shift is held
         Placement.calculateNodes(points, this, rotation, (point, other) -> Math.max(Math.abs(point.x - other.x), Math.abs(point.y - other.y)) <= range);
     }
 
