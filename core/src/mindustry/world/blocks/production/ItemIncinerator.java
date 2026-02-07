@@ -9,12 +9,15 @@ import mindustry.gen.*;
 import mindustry.graphics.*;
 import mindustry.type.*;
 import mindustry.world.*;
+import mindustry.world.consumers.*;
 import mindustry.world.meta.*;
+import mindustry.world.modules.*;
 
 /** Incinerator that accepts only items and optionally requires a liquid, e.g. slag. */
 public class ItemIncinerator extends Block{
     public Effect effect = Fx.incinerateSlag;
     public float effectChance = 0.2f;
+    public boolean allowLiquids;
 
     public @Load("@-liquid") TextureRegion liquidRegion;
     public @Load("@-top") TextureRegion topRegion;
@@ -26,11 +29,25 @@ public class ItemIncinerator extends Block{
     }
 
     @Override
+    public void setBars(){
+        super.setBars();
+        if(allowLiquids){
+            addLiquidBar((ItemIncineratorBuild build) -> build.burnLiquids.current());
+        }
+    }
+
+    public boolean isRequiredLiquid(Liquid liquid){
+        ConsumeLiquidBase cons = findConsumer(f -> f instanceof ConsumeLiquidBase);
+        return cons != null && cons.consumes(liquid);
+    }
+
+    @Override
     public TextureRegion[] icons(){
         return new TextureRegion[]{region, topRegion};
     }
 
     public class ItemIncineratorBuild extends Building{
+        public LiquidModule burnLiquids = new LiquidModule();
 
         @Override
         public void updateTile(){
@@ -62,6 +79,28 @@ public class ItemIncinerator extends Block{
 
         @Override
         public boolean acceptItem(Building source, Item item){
+            return efficiency > 0;
+        }
+
+        @Override
+        public void handleLiquid(Building source, Liquid liquid, float amount){
+            if(allowLiquids){
+                if(isRequiredLiquid(liquid)){
+                    super.handleLiquid(source, liquid, amount);
+                    return;
+                }
+
+                burnLiquids.handleFlow(liquid, amount);
+                if(Mathf.chance(effectChance)){
+                    effect.at(x, y);
+                }
+            }
+        }
+
+        @Override
+        public boolean acceptLiquid(Building source, Liquid liquid){
+            if(!allowLiquids) return false;
+            if(isRequiredLiquid(liquid)) return true;
             return efficiency > 0;
         }
     }

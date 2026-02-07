@@ -1527,6 +1527,7 @@ public class Blocks{
         slagIncinerator = new ItemIncinerator("slag-incinerator"){{
             requirements(Category.crafting, with(Items.tungsten, 15));
             size = 1;
+            allowLiquids = true;
             consumeLiquid(Liquids.slag, 0f);
         }};
 
