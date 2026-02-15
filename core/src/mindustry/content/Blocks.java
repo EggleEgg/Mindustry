@@ -5906,7 +5906,7 @@ public class Blocks{
             loopSound = Sounds.loopMalign;
             loopSoundVolume = 1.3f;
 
-            shootType = new FlakBulletType(8f, 70f){{
+            shootType = new FlakBulletType(8f, 35f){{
                 sprite = "missile-large";
 
                 lifetime = 40f;
@@ -5946,7 +5946,7 @@ public class Blocks{
                     damage = 18f;
                 }};
 
-                fragBullet = new LaserBulletType(65f){{
+                fragBullet = new LaserBulletType(32.5f){{
                     colors = new Color[]{haloColor.cpy().a(0.4f), haloColor, Color.white};
                     buildingDamageMultiplier = 0.25f;
                     width = 19f;
@@ -6212,6 +6212,7 @@ public class Blocks{
             consumePower(40f);
             unitSort = UnitSorts.strongest;
             shoot = new ShootSummon(0f, 0f, circleRad, 20f);
+            shoot.shots = 2;
 
             minWarmup = 0.96f;
             shootWarmupSpeed = 0.08f;

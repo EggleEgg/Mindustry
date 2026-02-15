@@ -2990,7 +2990,7 @@ public class UnitTypes{
             treadPullOffset = 1;
             speed = 0.48f;
             health = 22000;
-            armor = 18f;
+            armor = 26f;
             crushDamage = 25f / 5f;
             rotateSpeed = 0.8f;
             floorMultiplier = 0.3f;
@@ -3637,9 +3637,9 @@ public class UnitTypes{
 
         collaris = new ErekirUnitType("collaris"){{
             drag = 0.1f;
-            speed = 1.1f;
+            speed = 0.95f;
             hitSize = 44f;
-            health = 18000;
+            health = 15000;
             armor = 9f;
             rotateSpeed = 1.6f;
             lockLegBase = true;
@@ -3694,7 +3694,7 @@ public class UnitTypes{
                 shadow = 10f;
 
                 shootStatus = StatusEffects.slow;
-                shootStatusDuration = reload + 170f;
+                shootStatusDuration = reload + 40f;
 
                 shoot.shots = 1;
                 heatColor = Color.red;
