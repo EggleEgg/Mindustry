@@ -1,5 +1,6 @@
 package mindustry.entities.bullet;
 
+import arc.math.Mathf;
 import arc.math.geom.*;
 import arc.util.*;
 import mindustry.content.*;
@@ -11,6 +12,7 @@ public class RailBulletType extends BulletType{
     public Effect endEffect = Fx.none;
 
     public float length = 100f;
+    public float lengthRandMin = 1f, lengthRandMax = 1f;
 
     public float pointEffectSpace = 20f;
 
@@ -57,9 +59,9 @@ public class RailBulletType extends BulletType{
     @Override
     public void init(Bullet b){
         super.init(b);
-
-        b.fdata = length;
-        Damage.collideLine(b, b.team, b.x, b.y, b.rotation(), length, false, false, pierceCap);
+        float randLen = length * (lengthRandMin != 1f || lengthRandMax != 1f ? Mathf.random(lengthRandMin, lengthRandMax) : 1f);
+        b.fdata = randLen;
+        Damage.collideLine(b, b.team, b.x, b.y, b.rotation(), randLen, false, false, pierceCap);
         float resultLen = b.fdata;
 
         Vec2 nor = Tmp.v1.trns(b.rotation(), 1f).nor();

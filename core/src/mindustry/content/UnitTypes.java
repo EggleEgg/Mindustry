@@ -2979,7 +2979,7 @@ public class UnitTypes{
             treadPullOffset = 1;
             speed = 0.48f;
             health = 22000;
-            armor = 26f;
+            armor = 18f;
             crushDamage = 25f / 5f;
             rotateSpeed = 0.8f;
             floorMultiplier = 0.3f;
@@ -2993,29 +2993,30 @@ public class UnitTypes{
             treadRects = new Rect[]{new Rect(27 - xo, 152 - yo, 56, 73), new Rect(24 - xo, 51 - 9 - yo, 29, 17), new Rect(59 - xo, 18 - 9 - yo, 39, 19)};
 
             weapons.add(new Weapon("conquer-weapon"){{
-                shootSound = Sounds.shootConquer;
                 layerOffset = 0.1f;
-                reload = 100f;
-                shootY = 32.5f;
-                shake = 5f;
-                recoil = 5f;
+                reload = 170f;
+                shootY = 36f;
+                shake = 8f;
+                recoil = 8f;
                 rotate = true;
                 rotateSpeed = 0.6f;
                 mirror = false;
                 x = 0f;
                 y = -2f;
-                shadow = 50f;
+                shadow = 70f;
                 heatColor = Color.valueOf("f9350f");
-                shootWarmupSpeed = 0.06f;
-                cooldownTime = 110f;
-                heatColor = Color.valueOf("f9350f");
+                shootWarmupSpeed = 0.03f;
+                cooldownTime = 170f;
                 minWarmup = 0.9f;
+                shoot.firstShotDelay = 40f;
+
+                chargeSound = Sounds.chargeVela;
+                shootSound = Sounds.shootConquer;
 
                 parts.addAll(
                 new RegionPart("-glow"){{
-                    color = Color.red;
                     blending = Blending.additive;
-                    outline = mirror = false;
+                    color = Color.valueOf("ff0000");
                 }},
                 new RegionPart("-sides"){{
                     progress = PartProgress.warmup;
@@ -3028,14 +3029,14 @@ public class UnitTypes{
                     y = 8 / 4f;
                 }},
                 new RegionPart("-sinks"){{
-                    progress = PartProgress.warmup;
                     mirror = true;
                     under = true;
-                    heatColor = new Color(1f, 0.1f, 0.1f);
-                    moveX = 17f / 4f;
-                    moveY = -15f / 4f;
-                    x = 32 / 4f;
-                    y = -34 / 4f;
+                    x = 4f;
+                    y = -11f;
+                    moveX = 4.5f;
+                    moveY = -4.5f;
+                    heatColor = Color.valueOf("ff0000");
+                    heatProgress = PartProgress.warmup;
                 }},
                 new RegionPart("-sinks-heat"){{
                     blending = Blending.additive;
@@ -3054,102 +3055,105 @@ public class UnitTypes{
                 for(int i = 1; i <= 3; i++){
                     int fi = i;
                     parts.add(new RegionPart("-blade"){{
-                        progress = PartProgress.warmup.delay((3 - fi) * 0.3f).blend(PartProgress.reload, 0.3f);
+                        progress = PartProgress.warmup.delay((3 - fi) * 0.3f).blend(PartProgress.recoil, 0.3f);
                         heatProgress = PartProgress.heat.add(0.3f).min(PartProgress.warmup);
-                        heatColor = new Color(1f, 0.1f, 0.1f);
+                        heatColor = Color.valueOf("ff0000");
                         mirror = true;
                         under = true;
                         moveRot = -40f * fi;
                         moveX = 3f;
-                        layerOffset = -0.002f;
-
-                        x = 11 / 4f;
+                        x = 6f;
+                        y = -6f;
                     }});
                 }
 
-                bullet = new BasicBulletType(8f, 360f){{
-                    sprite = "missile-large";
-                    width = 12f;
-                    height = 20f;
-                    lifetime = 35f;
-                    hitSize = 6f;
+                bullet = new BasicBulletType(28f, 900f){{
+                    lifetime = 15f;
+                    hitEffect = Fx.hitConquer;
+                    shootEffect = new MultiEffect(
+                        new ParticleEffect(){{
+                            line = true;
+                            cone = 20f;
+                            particles = 17;
+                            lifetime = 20f;
+                            length = 70f;
+                            interp = Interp.pow3Out;
+                            sizeInterp = Interp.linear;
+                            lenFrom = 12f;
+                            lenTo = 6f;
+                            strokeFrom = 3f;
+                            strokeTo = 0f;
+                            colorTo = Color.valueOf("feb380");
+                        }},
+                        new ParticleEffect(){{
+                            particles = 1;
+                            length = 10f;
+                            randLength = false;
+                            lifetime = 30f;
+                            cone = 0f;
+                            offset = 90f;
+                            region = "shockwave";
+                            sizeFrom = 50f;
+                            sizeTo = 75f;
+                            colorFrom = Color.white;
+                            colorTo = Color.valueOf("feb38000");
+                            layer = 108f;
+                        }}
+                    );
 
-                    smokeEffect = Fx.shootSmokeTitan;
-                    pierceCap = 3;
-                    pierce = true;
-                    pierceBuilding = true;
-                    hitColor = backColor = trailColor = Color.valueOf("feb380");
-                    frontColor = Color.white;
-                    trailWidth = 4f;
-                    trailLength = 9;
-                    hitEffect = despawnEffect = Fx.massiveExplosion;
+                    trailEffect = new Effect(25f, e -> {
+                        float lineLen = Mathf.lerp(12f, 0f, e.fin());
+                        color(Color.white, e.color, e.fin(Interp.pow2Out));
+                        stroke(Mathf.lerp(1f, 0f, e.fin()));
 
-                    shootEffect = new ExplosionEffect(){{
-                        lifetime = 40f;
-                        waveStroke = 4f;
-                        waveColor = sparkColor = trailColor;
-                        waveRad = 15f;
-                        smokeSize = 5f;
-                        smokes = 8;
-                        smokeSizeBase = 0f;
-                        smokeColor = trailColor;
-                        sparks = 8;
-                        sparkRad = 40f;
-                        sparkLen = 4f;
-                        sparkStroke = 3f;
-                    }};
-
-                    int count = 6;
-                    for(int j = 0; j < count; j++){
-                        int s = j;
-                        for(int i : Mathf.signs){
-                            float fin = 0.05f + (j + 1) / (float)count;
-                            float spd = speed;
-                            float life = lifetime / Mathf.lerp(fin, 1f, 0.5f);
-                            spawnBullets.add(new BasicBulletType(spd * fin, 60){{
-                                drag = 0.002f;
-                                width = 12f;
-                                height = 11f;
-                                lifetime = life + 5f;
-                                weaveRandom = false;
-                                hitSize = 5f;
-                                pierceCap = 2;
-                                pierce = true;
-                                pierceBuilding = true;
-                                hitColor = backColor = trailColor = Color.valueOf("feb380");
-                                frontColor = Color.white;
-                                trailWidth = 2.5f;
-                                trailLength = 7;
-                                weaveScale = (3f + s/2f) / 1.2f;
-                                weaveMag = i * (4f - fin * 2f);
-
-                                splashDamage = 65f;
-                                splashDamageRadius = 30f;
-                                despawnEffect = new ExplosionEffect(){{
-                                    lifetime = 50f;
-                                    waveStroke = 4f;
-                                    waveColor = sparkColor = trailColor;
-                                    waveRad = 30f;
-                                    smokeSize = 7f;
-                                    smokes = 6;
-                                    smokeSizeBase = 0f;
-                                    smokeColor = trailColor;
-                                    sparks = 5;
-                                    sparkRad = 30f;
-                                    sparkLen = 3f;
-                                    sparkStroke = 1.5f;
-                                }};
-                            }});
+                        for(int s : Mathf.signs){
+                            float angle = e.rotation + (20f + Mathf.randomSeedRange(e.id, 25f)) * s;
+                            Tmp.v1.trns(angle, 20f * e.fin(Interp.pow2Out));
+                            Lines.lineAngle(e.x + Tmp.v1.x, e.y + Tmp.v1.y, angle, lineLen);
+                            Drawf.light(e.x + Tmp.v1.x, e.y + Tmp.v1.y, lineLen * 2f, Draw.getColor(), 0.6f * Draw.getColorAlpha());
                         }
-                    }
-                }};
-            }});
+                    });
 
-            parts.add(new RegionPart("-glow"){{
-                color = Color.red;
-                blending = Blending.additive;
-                layer = -1f;
-                outline = false;
+                    sprite = "missile-large";
+                    width = 11f;
+                    height = 120f;
+                    hitSize = 8f;
+                    frontColor = Color.white;
+                    backColor = trailColor = Color.valueOf("feb380");
+                    trailLength = 7;
+                    trailWidth = 3.5f;
+                    trailInterval = 1f;
+                    trailRotation = true;
+                    hitShake = 5f;
+                    setDefaults = false;
+                    despawnHit = false;
+
+                    fragBullets = 12;
+                    fragRandomSpread = 60f;
+                    fragBullet = new RailBulletType(){{
+                        damage = 80f;
+                        length = 140f;
+                        lengthRandMin = 0.6f;
+                        lengthRandMax = 1.2f;
+                        pierceDamageFactor = 0.1f;
+                        pierceEffect = Fx.flakExplosion;
+                        pointEffectSpace = 4f;
+                        pointEffect = new ParticleEffect(){{
+                            line = true;
+                            particles = 1;
+                            cone = 0f;
+                            length = 4f;
+                            baseLength = 2f;
+                            cap = false;
+                            lifetime = 25f;
+                            strokeFrom = 0.8f;
+                            strokeTo = 0f;
+                            lenFrom = 8f;
+                            lenTo = 2f;
+                            colorTo = Color.valueOf("feb380");
+                        }};
+                    }};
+                }};
             }});
         }};
 

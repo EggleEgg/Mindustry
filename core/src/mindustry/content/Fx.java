@@ -931,6 +931,44 @@ public class Fx{
         });
     }),
 
+    hitConquer = new Effect(40f, e -> {
+        Color smokeDark = Color.valueOf("787878");
+        Color smokeLight = Color.valueOf("9f9f9f");
+        Color flare = Color.valueOf("feb380");
+
+        color(smokeDark);
+        randLenVectors(e.id, 18, 70f * e.fin(Interp.pow3Out), e.rotation, 35f, (x, y) ->
+            Fill.circle(e.x + x, e.y + y, 4f * (1f - Interp.pow2In.apply(e.fin())))
+        );
+
+        e.scaled(25f, s -> {
+            color(smokeLight, smokeDark, s.fin());
+            randLenVectors(s.id, 10, 85f * s.fin(Interp.pow5Out), e.rotation, 35f, (x, y) ->
+                Fill.circle(e.x + x, e.y + y, 3f * (1f - Interp.pow3In.apply(s.fin())))
+            );
+        });
+
+        e.scaled(30f, s -> {
+            float fin = s.fin(Interp.pow2Out);
+            float shrink = Interp.pow2In.apply(s.fin());
+            color(Color.white, flare, fin);
+            stroke(Mathf.lerp(3f, 0f, shrink));
+            float len = Mathf.lerp(15f, 0f, shrink);
+            randLenVectors(s.id, 10, 110f * fin, e.rotation, 35f, (x, y) ->
+                lineAngle(e.x + x, e.y + y, Mathf.angle(x, y), len)
+            );
+        });
+
+        float tSize = 110f * e.fout();
+
+        color(flare);
+        for(int i : Mathf.signs){
+            Drawf.tri(e.x, e.y, tSize * 0.2f, 110f, e.rotation + i * 90f);
+        }
+
+        Drawf.light(e.x, e.y, tSize, flare, 0.4f);
+    }),
+
     hitFlameSmall = new Effect(14, e -> {
         color(Pal.lightFlame, Pal.darkFlame, e.fin());
         stroke(0.5f + e.fout());
