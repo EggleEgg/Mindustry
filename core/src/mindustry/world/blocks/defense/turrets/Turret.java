@@ -37,9 +37,12 @@ public class Turret extends ReloadTurret{
     public final static float logicControlCooldown = 60 * 2;
 
     public final int timerTarget = timers++;
+    public int timerKeepShooting = 0;
     /** Ticks between attempt at finding a target. */
     public float targetInterval = 20;
-    /** Target interval for when this turret already has a valid target. -1 = targetInterval */
+    /** Ticks this turret will keep shooting if it had a target, regardless of shooting angle or if the old target is dead. */
+    public float keepShootingTarget = 20;
+    /** Target interval for when this turret already has a valid target. -1 = targetInterval. */
     public float newTargetInterval = -1f;
 
     /** Maximum ammo units stored. */
@@ -550,6 +553,7 @@ public class Turret extends ReloadTurret{
 
                 if(timer(timerTarget, target != null ? newTargetInterval : targetInterval)){
                     findTarget();
+                    timerKeepShooting = 0;
                 }
 
                 if(validateTarget()){
@@ -564,7 +568,7 @@ public class Turret extends ReloadTurret{
                         targetPosition(target);
 
                         if(Float.isNaN(rotation)) rotation = 0;
-                        canShoot = within(target, range() + (target instanceof Sized hb ? hb.hitSize()/1.9f : 0f));
+                        canShoot = hasAnyTarget();
                     }
 
                     if(!isControlled()){
@@ -578,7 +582,7 @@ public class Turret extends ReloadTurret{
                         turnToTarget(targetRot);
                     }
 
-                    if(!alwaysShooting && Angles.angleDist(rotation, targetRot) < shootCone && canShoot){
+                    if(!alwaysShooting && canShoot && (Angles.angleDist(rotation, targetRot) < shootCone || (keepShootingTarget > 0 && (timerKeepShooting += Time.delta) < keepShootingTarget))){
                         wasShooting = true;
                         updateShooting();
                     }
@@ -611,6 +615,9 @@ public class Turret extends ReloadTurret{
         }
 
         protected boolean validateTarget(){
+            if(keepShootingTarget > 0){
+                return hasAnyTarget();
+            }
             return !Units.invalidateTarget(target, canHeal() ? Team.derelict : team, x, y) || isControlled() || logicControlled();
         }
 
@@ -646,6 +653,10 @@ public class Turret extends ReloadTurret{
 
         protected void turnToTarget(float targetRot){
             rotation = Angles.moveToward(rotation, targetRot, rotateSpeed * delta() * potentialEfficiency);
+        }
+
+        protected boolean hasAnyTarget(){
+            return target != null ? within(target, range() + (target instanceof Sized hb ? hb.hitSize()/1.9f : 0f)) : false;
         }
 
         public boolean shouldTurn(){
