@@ -134,6 +134,7 @@ public class SettingsMenuDialog extends BaseDialog{
             t.button("@settings.clearcampaignsaves", Icon.trash, style, () -> {
                 ui.showConfirm("@confirm", "@settings.clearcampaignsaves.confirm", () -> {
                     for(var planet : content.planets()){
+                        planet.clearStats();
                         for(var sec : planet.sectors){
                             sec.clearInfo();
                             if(sec.save != null){
@@ -426,11 +427,26 @@ public class SettingsMenuDialog extends BaseDialog{
         if(!mobile){
             graphics.checkPref("vsync", true, b -> Core.graphics.setVSync(b));
             graphics.checkPref("fullscreen", false, b -> {
+                if(b && settings.getBool("borderlesswindow")){
+                    Core.graphics.setWindowedMode(Core.graphics.getWidth(), Core.graphics.getHeight());
+                    settings.put("borderlesswindow", false);
+                    graphics.rebuild();
+                }
+
                 if(b){
                     Core.graphics.setFullscreen();
                 }else{
                     Core.graphics.setWindowedMode(Core.graphics.getWidth(), Core.graphics.getHeight());
                 }
+            });
+
+            graphics.checkPref("borderlesswindow", false, b -> {
+                if(b && settings.getBool("fullscreen")){
+                    Core.graphics.setWindowedMode(Core.graphics.getWidth(), Core.graphics.getHeight());
+                    settings.put("fullscreen", false);
+                    graphics.rebuild();
+                }
+                Core.graphics.setBorderless(b);
             });
 
             Core.graphics.setVSync(Core.settings.getBool("vsync"));
@@ -439,6 +455,9 @@ public class SettingsMenuDialog extends BaseDialog{
                 Core.app.post(() -> Core.graphics.setFullscreen());
             }
 
+            if(Core.settings.getBool("borderlesswindow")){
+                Core.app.post(() -> Core.graphics.setBorderless(true));
+            }
         }else if(!ios){
             graphics.checkPref("landscape", false, b -> {
                 if(b){
