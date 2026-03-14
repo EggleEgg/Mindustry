@@ -1,14 +1,20 @@
 package mindustry.entities.pattern;
 
 import arc.util.*;
+import mindustry.entities.*;
 
 public class ShootMulti extends ShootPattern{
     public ShootPattern source;
-    public ShootPattern[] dest = {};
-
+    public ShootPattern[] dest = {}, all = {};
     public ShootMulti(ShootPattern source, ShootPattern... dest){
         this.source = source;
         this.dest = dest;
+        //to not allocate inside shoot()
+        this.all = new ShootPattern[dest.length + 1];
+        for(int i = 0; i < dest.length; i++){
+            all[i] = dest[i];
+        }
+        all[dest.length] = source;
     }
 
     public ShootMulti(){
@@ -24,19 +30,44 @@ public class ShootMulti extends ShootPattern{
             dest[i] = dest[i].copy();
             dest[i].flip();
         }
+        all = new ShootPattern[dest.length + 1];
+        for(int i = 0; i < dest.length; i++){
+            all[i] = dest[i];
+        }
+        all[dest.length] = source;
     }
 
     @Override
     public void shoot(int totalShots, BulletHandler handler, @Nullable Runnable barrelIncrementer){
-        source.shoot(totalShots, (x, y, rotation, delay, move) -> {
-            for(var pattern : dest){
-                pattern.shoot(totalShots, (x2, y2, rot2, delay2, mover) -> {
-                    handler.shoot(x + x2, y + y2, rotation + rot2, delay + delay2, move == null && mover == null ? null : b -> {
-                        if(move != null) move.move(b);
-                        if(mover != null) mover.move(b);
-                    });
-                }, null);
+        int[] counter = {totalShots};
+
+        //dest patterns first, then source last
+        shootRecursive(all, 0, counter, handler, barrelIncrementer, 0f, 0f, 0f, 0f, null);
+    }
+
+    /**
+     * Patterns are executed in the order they appear in the array. The last pattern in the array is applied innermost, ensuring that
+     * alternating/offsetting patterns behave per bullet rather than per group.
+     */
+    public void shootRecursive(ShootPattern[] patterns, int idx, int[] counter, BulletHandler handler, 
+        Runnable barrelIncrementer, float x, float y, float rotation, float delay, Mover move){
+        if(idx == patterns.length){
+            handler.shoot(x, y, rotation, delay, move);
+            if(barrelIncrementer != null) barrelIncrementer.run();
+            counter[0]++;
+            return;
+        }
+
+        ShootPattern p = patterns[idx];
+        p.shoot(counter[0], (dx, dy, dRot, dDelay, dMove) -> {
+            Mover combined = null;
+            if(move != null || dMove != null){
+                combined = b -> {
+                    if(move != null) move.move(b);
+                    if(dMove != null) dMove.move(b);
+                };
             }
+            shootRecursive(patterns, idx + 1, counter, handler, barrelIncrementer, x + dx, y + dy, rotation + dRot, delay + dDelay, combined);
         }, barrelIncrementer);
     }
 }
