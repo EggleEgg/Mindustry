@@ -30,6 +30,7 @@ abstract class BulletComp implements Timedc, Damagec, Hitboxc, Teamc, Posc, Draw
     IntSeq collided = new IntSeq(6);
     BulletType type;
     Vec2 vel = new Vec2();
+    Rect rect = new Rect(), hitRect = new Rect();
 
     Object data;
     float fdata;
@@ -171,6 +172,7 @@ abstract class BulletComp implements Timedc, Damagec, Hitboxc, Teamc, Posc, Draw
         }
 
         type.update(self());
+        unitRaycast();
 
         if(stickyTarget != null){
             //only stick to things that still exist in the world
@@ -307,6 +309,41 @@ abstract class BulletComp implements Timedc, Damagec, Hitboxc, Teamc, Posc, Draw
                 y += sy;
             }
         }
+    }
+
+    //likely computationally expensive
+    private void unitRaycast(){
+        if(type.speed < 15f || !type.useRaycast) return;
+
+        Vec2 start = Tmp.v1.set(lastX, lastY), end = Tmp.v2.set(x, y);
+        float margin = type.hitSize + 5f;
+        float minX = Math.min(start.x, end.x) - margin;
+        float maxX = Math.max(start.x, end.x) + margin;
+        float minY = Math.min(start.y, end.y) - margin;
+        float maxY = Math.max(start.y, end.y) + margin;
+
+        rect.set(minX, minY, maxX - minX, maxY - minY);
+
+        Units.nearbyEnemies(team, rect, u -> {
+            if(u.checkTarget(type.collidesAir, type.collidesGround) && u.hittable()){
+                u.hitbox(hitRect);
+
+                Vec2 intersect = Geometry.raycastRect(start.x, start.y, end.x, end.y, hitRect);
+
+                if(intersect != null){
+                    this.x = intersect.x;
+                    this.y = intersect.y;
+                    collision(u, intersect.x, intersect.y);
+                    if(!type.pierce){
+                        hit = true;
+                        remove();
+                        return;
+                    }else{
+                        collided.add(u.id());
+                    }
+                }
+            }
+        });
     }
 
     @Override

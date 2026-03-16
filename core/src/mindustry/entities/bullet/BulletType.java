@@ -43,6 +43,8 @@ public class BulletType extends Content implements Cloneable{
     public float hitSize = 4;
     /** Clipping hitbox. */
     public float drawSize = 40f;
+    /** Whether this bullet can use raycast instead of only getCollisions() at high speeds (>= 15f). */
+    public boolean useRaycast = true;
     /** Angle offset applied to bullet when spawned each time. */
     public float angleOffset = 0f, randomAngleOffset = 0f;
     /** Drag as fraction of velocity. */
@@ -145,6 +147,8 @@ public class BulletType extends Content implements Cloneable{
     public boolean absorbable = true;
     /** If true, the angle param in create is ignored. */
     public boolean ignoreSpawnAngle = false;
+    /** If the target isnt within this bullet angle, the bullet wont be created. */
+    public float targetAngle = 360f;
     /** Chance for this bullet to be created. */
     public float createChance = 1;
     /** Bullet range positive override. */
@@ -241,7 +245,7 @@ public class BulletType extends Content implements Cloneable{
     public Effect healEffect = Fx.healBlockFull;
     /** Bullets spawned when this bullet is created. Rarely necessary, used for visuals. */
     public Seq<BulletType> spawnBullets = new Seq<>();
-    /** Whether to display the stats of the spawned bullet. */
+    /** Whether to display the stats of the spawned bullet. Only applies inside the child, the spawnBullet itself. */
     public boolean showStats = false;
     /** Random angle spread of spawn bullets. */
     public float spawnBulletRandomSpread = 0f;
@@ -432,7 +436,13 @@ public class BulletType extends Content implements Cloneable{
         if(rangeOverride > 0) return rangeOverride;
         if(spawnUnit != null) return spawnUnit.lifetime * spawnUnit.speed;
         if(despawnUnit != null) return despawnUnit.lifetime * despawnUnit.speed;
-        return Math.max(Mathf.zero(drag) ? speed * lifetime : speed * (1f - Mathf.pow(1f - drag, lifetime)) / drag, maxRange);
+        float calcRange;
+        if(Mathf.zero(drag)){
+            calcRange = speed * lifetime + 0.5f * accel * lifetime * lifetime;
+        }else{
+            calcRange = (speed - accel / drag) * (1f - Mathf.pow(1f - drag, lifetime)) / drag + (accel * lifetime) / drag;
+        }
+        return Math.max(calcRange, maxRange);
     }
 
     /** @return continuous damage in damage/sec, or -1 if not continuous. */
@@ -910,8 +920,9 @@ public class BulletType extends Content implements Cloneable{
     ){
         angle += angleOffset + Mathf.range(randomAngleOffset);
 
-        if(!Mathf.chance(createChance)) return null;
-        if(ignoreSpawnAngle) angle = 0;
+        if(!Mathf.chance(createChance) || 
+            targetAngle < 360f && !ignoreSpawnAngle && !Angles.within(angle, Angles.angle(x, y, aimX, aimY), targetAngle)) return null;
+
         if(spawnUnit != null){
             //don't spawn units clientside!
             if(!net.client()){

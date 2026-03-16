@@ -1,6 +1,6 @@
 package mindustry.entities.bullet;
 
-import arc.math.Mathf;
+import arc.math.*;
 import arc.math.geom.*;
 import arc.util.*;
 import mindustry.content.*;

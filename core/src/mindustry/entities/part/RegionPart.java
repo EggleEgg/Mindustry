@@ -64,6 +64,11 @@ public class RegionPart extends DrawPart{
     }
 
     @Override
+    public boolean isMirrored(){
+        return mirror;
+    }
+
+    @Override
     public void draw(PartParams params){
         float z = Draw.z();
         if(layer > 0) Draw.z(layer);
@@ -115,7 +120,11 @@ public class RegionPart extends DrawPart{
                 rot = mr * sign + params.rotation - 90;
 
             if(outline && drawRegion){
-                Draw.z(prevZ + outlineLayerOffset);
+                if(under && turretShading){
+                    Draw.z(Layer.turret - 0.01f);
+                }else{
+                    Draw.z(under ? Math.max(prevZ + outlineLayerOffset, prevZ) : prevZ + outlineLayerOffset);
+                }
                 rect(outlines[Math.min(i, regions.length - 1)], rx, ry, rot);
                 Draw.z(prevZ);
             }
@@ -142,7 +151,7 @@ public class RegionPart extends DrawPart{
             if(heat.found()){
                 float hprog = heatProgress.getClamp(params, clampProgress);
                 heatColor.write(Tmp.c1).a(hprog * heatColor.a);
-                Drawf.additive(heat, Tmp.c1, 1f, rx, ry, rot, turretShading ? turretHeatLayer : Draw.z() + heatLayerOffset, originX, originY);
+                Drawf.additive(heat, Tmp.c1, 1f, rx, ry, rot, turretShading ? turretHeatLayer : Draw.z() + heatLayerOffset - (under ? 1f : 0f), originX, originY);
                 if(heatLight) Drawf.light(rx, ry, light.found() ? light : heat, rot, Tmp.c1, heatLightOpacity * hprog);
             }
 

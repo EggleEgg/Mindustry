@@ -61,7 +61,7 @@ public class Weapon implements Cloneable{
     public boolean controllable = true;
     /** whether this weapon can be automatically aimed by the unit */
     public boolean aiControllable = true;
-    /** whether this weapon is always shooting, regardless of targets ore cone */
+    /** whether this weapon is always shooting, regardless of targets own cone */
     public boolean alwaysShooting = false;
     /** whether to automatically target relevant units in update(); only works when controllable = false. */
     public boolean autoTarget = false;
@@ -81,6 +81,10 @@ public class Weapon implements Cloneable{
     public float shake = 0f;
     /** visual weapon knockback. */
     public float recoil = 1.5f;
+    /** visual unit sprite sway displacement when this weapon shoots. */
+    public float unitRecoil = 0f;
+    /** Whether this weapon should be affected by the unit sway */
+    public boolean useUnitRecoil = true;
     /** Number of additional counters for recoil. */
     public int recoils = -1;
     /** time taken for weapon to return to starting position in ticks. uses reload time by default */
@@ -161,6 +165,7 @@ public class Weapon implements Cloneable{
     public @Nullable Effect shootOnDeathEffect = null;
     /** extra animated parts */
     public Seq<DrawPart> parts = new Seq<>(DrawPart.class);
+    public FloatSeq recoilParts = new FloatSeq();
 
     public Weapon(String name){
         this.name = name;
@@ -231,16 +236,28 @@ public class Weapon implements Cloneable{
             drawOutline(unit, mount);
         }
 
+        float[] partRecoils = null;
         if(parts.size > 0){
             DrawPart.params.set(mount.warmup, mount.reload / reload, mount.smoothReload, mount.heat, mount.recoil, mount.charge, wx, wy, weaponRotation + 90);
             DrawPart.params.sideMultiplier = flipSprite ? -1 : 1;
+            partRecoils = recoilParts.setSize(parts.size * 2);
+            int autoRecoil = 0;
+
+            for(int i = 0; i < parts.size; i++){
+                if(parts.get(i).recoilIndex < 0 && parts.get(i).isMirrored()){
+                    partRecoils[i * 2] = recoilFor(mount.recoils, autoRecoil++, mount.recoil);
+                    partRecoils[i * 2 + 1] = recoilFor(mount.recoils, autoRecoil++, mount.recoil);
+                }else{
+                    float recoil = recoilFor(mount.recoils, parts.get(i).recoilIndex, mount.recoil);
+                    partRecoils[i * 2] = recoil;
+                    partRecoils[i * 2 + 1] = recoil;
+                }
+            }
 
             for(int i = 0; i < parts.size; i++){
                 var part = parts.get(i);
-                DrawPart.params.setRecoil(part.recoilIndex >= 0 && mount.recoils != null ? mount.recoils[part.recoilIndex] : mount.recoil);
                 if(part.under){
-                    unit.type.applyColor(unit);
-                    part.draw(DrawPart.params);
+                    drawParts(unit, part, partRecoils, i);
                 }
             }
         }
@@ -274,10 +291,8 @@ public class Weapon implements Cloneable{
             //TODO does it need an outline?
             for(int i = 0; i < parts.size; i++){
                 var part = parts.get(i);
-                DrawPart.params.setRecoil(part.recoilIndex >= 0 && mount.recoils != null ? mount.recoils[part.recoilIndex] : mount.recoil);
                 if(!part.under){
-                    unit.type.applyColor(unit);
-                    part.draw(DrawPart.params);
+                    drawParts(unit, part, partRecoils, i);
                 }
             }
         }
@@ -289,6 +304,15 @@ public class Weapon implements Cloneable{
 
     public float range(){
         return bullet.range;
+    }
+
+    public void drawParts(Unit unit, DrawPart part, float[] partRecoils, int index){
+        for(int side = 0; side < (part.isMirrored() ? 2 : 1); side++){
+            DrawPart.params.sideOverride = part.isMirrored() ? side : -1;
+            DrawPart.params.setRecoil(partRecoils[index * 2 + side]);
+            unit.type.applyColor(unit);
+            part.draw(DrawPart.params);
+        }
     }
 
     public void update(Unit unit, WeaponMount mount){
@@ -382,7 +406,7 @@ public class Weapon implements Cloneable{
                 mount.bullet.rotation(weaponRotation + 90);
                 mount.bullet.set(bulletX, bulletY);
                 mount.reload = reload;
-                mount.recoil = 1f;
+                setRecoil(mount, false);
                 unit.vel.add(Tmp.v1.trns(mount.bullet.rotation() + 180f, mount.bullet.type.recoil * Time.delta));
                 if(shootSound != Sounds.none && !headless){
                     if(mount.sound == null) mount.sound = new SoundLoop(shootSound, 1f);
@@ -526,10 +550,7 @@ public class Weapon implements Cloneable{
 
         unit.vel.add(Tmp.v1.trns(shootAngle + 180f, bullet.recoil));
         Effect.shake(shake, shake, bulletX, bulletY);
-        mount.recoil = 1f;
-        if(recoils > 0){
-            mount.recoils[mount.barrelCounter % recoils] = 1f;
-        }
+        setRecoil(mount, true);
         mount.heat = 1f;
     }
 
@@ -564,6 +585,18 @@ public class Weapon implements Cloneable{
         }catch(CloneNotSupportedException suck){
             throw new RuntimeException("very good language design", suck);
         }
+    }
+
+    public void setRecoil(WeaponMount mount, boolean useBarrel){
+        mount.recoil = 1f;
+        if(useBarrel && recoils > 0){
+            if(mount.recoils == null) mount.recoils = new float[recoils];
+            mount.recoils[mount.barrelCounter % recoils] = 1f;
+        }
+    }
+
+    public float recoilFor(float[] recoils, int index, float baseRecoil){
+        return recoils != null && index >= 0 && index < recoils.length ? recoils[index] : baseRecoil;
     }
 
     @CallSuper

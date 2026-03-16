@@ -522,6 +522,7 @@ public class UnitType extends UnlockableContent implements Senseable{
     //INTERNAL REQUIREMENTS
 
     protected float buildTime = -1f;
+    protected IntSeq unitRecoilMounts = new IntSeq();
     protected @Nullable ItemStack[] totalRequirements, cachedRequirements, firstRequirements;
 
     public UnitType(String name){
@@ -1044,6 +1045,10 @@ public class UnitType extends UnlockableContent implements Senseable{
             ab.init(this);
         }
 
+        for(int i = 0; i < weapons.size; i++){
+            if(weapons.get(i).unitRecoil > 0f && weapons.get(i).recoil > 0f) unitRecoilMounts.add(i);
+        }
+
         //add mirrored weapon variants
         Seq<Weapon> mapped = new Seq<>();
         for(Weapon w : weapons){
@@ -1507,6 +1512,40 @@ public class UnitType extends UnlockableContent implements Senseable{
             seg != null ? groundLayer + seg.segmentIndex() / 4000f * Mathf.sign(segmentLayerOrder) + (!segmentLayerOrder ? 0.01f : 0f) :
             groundLayer + Mathf.clamp(hitSize / 4000f, 0, 0.01f);
 
+        float recoilOffX = 0f, recoilOffY = 0f;
+        float recoilMot = 0f, swayRot = 0f;
+        float baseRot = unit.rotation;
+        float totalOffX = 0f, totalOffY = 0f;
+        boolean hasSway = false;
+
+        if(unitRecoilMounts.size > 0 && unit.mounts.length > 0){
+            float fwdRot = unit.rotation + Mathf.randomSeed(unit.id, 90f);
+            float fwdX = Angles.trnsx(fwdRot, 1f);
+            float fwdY = Angles.trnsy(fwdRot, 1f);
+
+            for(int i = 0; i < unitRecoilMounts.size; i++){
+                int index = unitRecoilMounts.get(i);
+                if(index >= unit.mounts.length) continue;
+                WeaponMount mount = unit.mounts[index];
+                Weapon weapon = mount.weapon;
+                if(mount.recoil > 0f){
+                    float recoil = -Mathf.pow(mount.recoil, weapon.recoilPow) * weapon.unitRecoil;
+                    float rot = unit.rotation + (weapon.rotate ? mount.rotation : weapon.baseRotation);
+                    float rx = Angles.trnsx(rot, recoil), ry = Angles.trnsy(rot, recoil);
+                    recoilOffX += rx;
+                    recoilOffY += ry;
+                    recoilMot += weapon.y * (rx * fwdX + ry * fwdY);
+                }
+            }
+
+            float swayOsc = Mathf.sin(Time.time * 0.25f + Mathf.randomSeed(unit.id, 30f, 50f)) * Mathf.sign(recoilMot) * Mathf.pow(Math.abs(recoilMot), 3f) * 0.01f;
+            float swayTrns = Mathf.clamp(recoilMot * 0.35f + swayOsc, -3f, 3f);
+            swayRot = Mathf.clamp(recoilMot * 0.55f + swayOsc * 0.85f, -3f, 3f);
+            totalOffX = recoilOffX + fwdX * swayTrns;
+            totalOffY = recoilOffY + fwdY * swayTrns;
+            hasSway = totalOffX != 0f || totalOffY != 0f;
+        }
+
         if(!isPayload && (unit.isFlying() || shadowElevation > 0)){
             Draw.z(Math.min(Layer.darkness, z - 1f));
             drawShadow(unit);
@@ -1551,18 +1590,31 @@ public class UnitType extends UnlockableContent implements Senseable{
             drawCrawl(c);
         }
 
-        if(drawBody) drawOutline(unit);
-        drawWeaponOutlines(unit);
+        if(drawBody){
+            if(hasSway) unit.trns(totalOffX, totalOffY);
+            if(swayRot != 0f) unit.rotation = baseRot + swayRot;
+            drawOutline(unit);
+            if(swayRot != 0f) unit.rotation = baseRot;
+            if(hasSway) unit.trns(-totalOffX, -totalOffY);
+        }
+
+        drawWeaponOutlines(unit, totalOffX, totalOffY, swayRot, hasSway);
         if(engineLayer > 0) Draw.z(engineLayer);
         if(trailLength > 0 && !naval && (unit.isFlying() || !useEngineElevation)){
             drawTrail(unit);
         }
         if(engines.size > 0) drawEngines(unit);
         Draw.z(z);
-        if(drawBody) drawBody(unit);
-        if(drawCell && !(unit instanceof Crawlc)) drawCell(unit);
+        if(drawBody || (drawCell && !(unit instanceof Crawlc))){
+            if(hasSway) unit.trns(totalOffX, totalOffY);
+            if(swayRot != 0f) unit.rotation = baseRot + swayRot;
+            if(drawBody) drawBody(unit);
+            if(drawCell && !(unit instanceof Crawlc)) drawCell(unit);
+            if(swayRot != 0f) unit.rotation = baseRot;
+            if(hasSway) unit.trns(-totalOffX, -totalOffY);
+        }
         Draw.scl(scl); //TODO this is a hack for neoplasm turrets
-        drawWeapons(unit);
+        drawWeapons(unit, totalOffX, totalOffY, swayRot, hasSway);
         if(drawItems) drawItems(unit);
         if(!isPayload){
             drawLight(unit);
@@ -1747,19 +1799,30 @@ public class UnitType extends UnlockableContent implements Senseable{
         Draw.color();
     }
 
-    public void drawWeapons(Unit unit){
+    public void drawWeapons(Unit unit, float swayX, float swayY, float swayRot, boolean hasSway){
         applyColor(unit);
+        float baseRot = unit.rotation;
 
         for(WeaponMount mount : unit.mounts){
+            if(hasSway && mount.weapon.useUnitRecoil){
+                unit.trns(swayX, swayY);
+                unit.rotation = baseRot + swayRot;
+            }
+
             mount.weapon.draw(unit, mount);
+            if(hasSway && mount.weapon.useUnitRecoil){
+                unit.rotation = baseRot;
+                unit.trns(-swayX, -swayY);
+            }
         }
 
         Draw.reset();
     }
 
-    public void drawWeaponOutlines(Unit unit){
+    public void drawWeaponOutlines(Unit unit, float swayX, float swayY, float swayRot, boolean hasSway){
         applyColor(unit);
         applyOutlineColor(unit);
+        float baseRot = unit.rotation;
 
         for(WeaponMount mount : unit.mounts){
             if(!mount.weapon.top){
@@ -1767,7 +1830,16 @@ public class UnitType extends UnlockableContent implements Senseable{
                 float z = Draw.z();
                 Draw.z(z + mount.weapon.layerOffset);
 
+                if(hasSway && mount.weapon.useUnitRecoil){
+                    unit.trns(swayX, swayY);
+                    unit.rotation = baseRot + swayRot;
+                }
+
                 mount.weapon.drawOutline(unit, mount);
+                if(hasSway && mount.weapon.useUnitRecoil){
+                    unit.rotation = baseRot;
+                    unit.trns(-swayX, -swayY);
+                }
 
                 Draw.z(z);
             }

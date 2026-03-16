@@ -1,5 +1,6 @@
 package mindustry.entities.pattern;
 
+import arc.math.*;
 import arc.util.*;
 import mindustry.entities.*;
 
@@ -10,7 +11,7 @@ public class ShootPattern implements Cloneable{
     /** delay in ticks before first shot */
     public float firstShotDelay = 0;
     /** delay in ticks between shots */
-    public float shotDelay = 0;
+    public float shotDelay = 0, randShotDelay = 0;
 
     /** Called on a single "trigger pull". This function should call the handler with any bullets that result. */
     public void shoot(int totalShots, BulletHandler handler, @Nullable Runnable barrelIncrementer){
@@ -21,7 +22,7 @@ public class ShootPattern implements Cloneable{
     /** Called on a single "trigger pull". This function should call the handler with any bullets that result. */
     public void shoot(int totalShots, BulletHandler handler){
         for(int i = 0; i < shots; i++){
-            handler.shoot(0, 0, 0, firstShotDelay + shotDelay * i);
+            handler.shoot(0, 0, 0, firstShotDelay + (shotDelay + Mathf.random(randShotDelay)) * i);
         }
     }
 

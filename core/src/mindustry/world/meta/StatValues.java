@@ -764,6 +764,15 @@ public class StatValues{
                         sep(bt, "@bullet.notargetsbuildings");
                     }
 
+                    if(type instanceof MultiBulletType multi && multi.bullets.length > 0){
+                        bt.row();
+                        bt.table(mc -> {
+                            for(BulletType sub : multi.bullets){
+                                ammo(ObjectMap.of(t, sub), true, false).display(mc);
+                            }
+                        });
+                    }
+
                     if(type.intervalBullet != null){
                         bt.row();
 

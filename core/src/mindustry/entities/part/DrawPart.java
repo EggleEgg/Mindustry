@@ -21,6 +21,10 @@ public abstract class DrawPart{
     public void load(String name){}
     public void getOutlines(Seq<TextureRegion> out){}
 
+    public boolean isMirrored(){
+        return false;
+    }
+
     /** Parameters for drawing a part in draw(). */
     public static class PartParams{
         //TODO document

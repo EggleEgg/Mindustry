@@ -27,6 +27,11 @@ public class EffectSpawnerPart extends DrawPart{
     public boolean debugDraw = false;
 
     @Override
+    public boolean isMirrored(){
+        return mirror;
+    }
+
+    @Override
     public void draw(PartParams params){
         if(debugDraw){
             for(int i = 0; i < (mirror ? 2 : 1); i++){

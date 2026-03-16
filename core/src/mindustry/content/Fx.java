@@ -7,6 +7,7 @@ import arc.math.*;
 import arc.math.geom.*;
 import arc.struct.*;
 import arc.util.*;
+import mindustry.*;
 import mindustry.entities.*;
 import mindustry.entities.abilities.*;
 import mindustry.gen.*;
@@ -18,6 +19,7 @@ import mindustry.world.blocks.units.UnitAssembler.*;
 import static arc.graphics.g2d.Draw.rect;
 import static arc.graphics.g2d.Draw.*;
 import static arc.graphics.g2d.Lines.*;
+import static arc.graphics.g2d.Lines.rect;
 import static arc.math.Angles.*;
 import static mindustry.Vars.*;
 
@@ -426,6 +428,167 @@ public class Fx{
         });
     }).layer(Layer.debris),
 
+    railFurrowTrail = new Effect(120f, e -> {
+        float len = 50f, width = 9f;
+
+        rand.setSeed(e.id);
+        float cos = Mathf.cosDeg(e.rotation), sin = Mathf.sinDeg(e.rotation);
+        float randC = width * rand.random(-0.5f, 1.5f);
+        float fout = e.fout() * 0.8f, fin = e.fin();
+
+        float darkVal = 1f * rand.random(0.9f, 1.1f);
+        float lightVal = 1.15f * rand.random(0.9f, 1.1f);
+        Tile floor = Vars.world.tileWorld(e.x, e.y);
+        Color baseColor = floor != null ? floor.getFloorColor() : e.color;
+        Color dark = Tmp.c3.set(baseColor).mul(0.7f);
+        Color light = Tmp.c4.set(baseColor).mul(1.65f);
+
+        //probably dont use this if the projectile path isnt straight, or set the number to much higher.
+        int underParts = 2;
+        float underSegLen = (len + 10f) / underParts, offset = width - 2f;
+        float smooth = 4f, gap = 4f, total = smooth + gap;
+        for(int i = 0; i < underParts; i++){
+            float px = -len / 2f + underSegLen * (i + 0.5f);
+            float cx = e.x + cos * px, cy = e.y + sin * px;
+            float alpha = 0.35f * Interp.pow3In.apply(fout);
+
+            for(int side : Mathf.signs){
+                float sx = cx + sin * offset / 2f * side, sy = cy - cos * offset / 2f * side;
+                color(side == -1 ? dark : light, alpha);
+                Fill.rect(sx, sy, underSegLen, offset, e.rotation);
+
+                float sxo = cx + sin * (offset / 2f + total) * side, syo = cy - cos * (offset / 2f + total) * side;
+                color(side == -1 ? dark : light, alpha * 0.5f);
+                Fill.rect(sxo, syo, underSegLen, smooth * 2f, e.rotation);
+            }
+        }
+
+        int floorParts = 6;
+        for(int i = 0; i < floorParts; i++){
+            float t = (float)i / floorParts;
+
+            float px = (t - 0.5f) * len * rand.random(1f, 1.2f);
+            float py = rand.random(-width * 0.6f, width * 0.6f);
+            float wx = e.x + cos * px - sin * py, wy = e.y + sin * px + cos * py;
+
+            float size = rand.random(1.4f, 2.6f);
+            float randB = randC * Mathf.randomSeed(e.id * 7, 0f, 1.2f) - randC;
+
+            float off = size + 0.8f;
+            float ang = rand.random(360f);
+            randLenVectors(e.id + i * 37, 1, 1f, (vx, vy) -> {
+                float lenv = Mathf.sqrt(vx * vx + vy * vy);
+                float scale = off / (lenv <= 0.0001f ? 1f : lenv);
+                float cx = wx + vx * scale, cy = wy + vy * scale;
+                Color darkColor = Tmp.c1.set(baseColor).mul(darkVal);
+
+                color(baseColor, 0.4f * fout);
+                Fill.square(wx, wy, width, rand.random(360f));
+
+                color(darkColor, fout);
+                Fill.square(wx, wy, size, rand.random(360f));
+                Fill.circle(cx, cy, size * 0.7f);
+
+                color(baseColor, fout);
+                Fill.square(wx, wy, size * 0.6f, rand.random(360f));
+                Fill.circle(cx + randB * 0.2f, cy - randB * 0.2f, size * 0.45f);
+            });
+        }
+
+        int ridge = 12;
+        for(int i = 0; i < ridge; i++){
+            float t = (float)i / ridge;
+
+            float side = Mathf.randomSeed(e.id + i * 23) > 0.5f ? 1f : -1f;
+            float px = t * len;
+            float py = side * width * rand.random(1.1f, 1.5f);
+            float wx = e.x + cos * px - sin * py, wy = e.y + sin * px + cos * py;
+
+            float size = width * rand.random(1f, 3f) * 0.18f;
+            float fade = 0.9f* rand.random(1f, 1.2f) * Mathf.clamp(1f - fin * 1.3f);
+
+            float cx = wx + rand.random(-2f, 6f), cy = wy + rand.random(-2f, 6f);
+
+            color(baseColor, fout * fade);
+            Fill.square(wx, wy, size, e.rotation + 90f * side + rand.random(180f));
+            Fill.circle(cx, cy, size * rand.random(0.7f, 1.1f));
+        }
+
+        int debris = 2;
+        for(int i = 0; i < debris; i++){
+            float t = rand.random(-0.7f, 0.7f) * len;
+            float side = Mathf.randomSeed(e.id + i * 61 + 1) > 0.5f ? 1f : -1f;
+
+            float px = t * 1.2f;
+            float py = side * width * rand.random(0.5f, 1.3f);
+            float wx = e.x + cos * px - sin * py, wy = e.y + sin * px + cos * py;
+
+            float vel = rand.random(2f, 45f);
+            float forward = rand.random(0f, 10f);
+
+            float fallDelay = Mathf.randomSeed(e.id + i * 61 + 13, 0f, 0.35f);
+            float fallFin = Mathf.clamp((fin - fallDelay) / (1f - fallDelay), 0f, 1f);
+            float fall = Mathf.clamp(1f - Mathf.pow(10f, -10f * fallFin), 0f, 1f);
+            float fade = 3.5f * rand.random(1.5f, 2f) * Mathf.clamp(1f - fallFin * 1.7f);
+
+            float dx = (cos * forward + Mathf.cosDeg(e.rotation + 90f * side) * vel) * fall;
+            float dy = (sin * forward + Mathf.sinDeg(e.rotation + 90f * side) * vel) * fall;
+            float lx = wx + dx, ly = wy + dy;
+
+            float randMin = 4f, randMax = 9f;
+            float randSize = rand.random(randMin, randMax);
+            float randB = rand.random(-1f, 1f) * randC * 0.5f;
+            float off = randSize + 2f;
+            float ang = rand.random(360f);
+            randLenVectors(e.id + i * 61, 1, 1f, (vx, vy) -> {
+                float lenv = Mathf.sqrt(vx * vx + vy * vy);
+                float scale = off / (lenv <= 0.0001f ? 1f : lenv);
+                Tmp.v1.set(vx * scale, vy * scale);
+            });
+            float cx = lx + Tmp.v1.x, cy = ly + Tmp.v1.y;
+
+            float size = randSize * (1f + 0.7f * Mathf.clamp(1f - 4f * Mathf.pow(fall - 0.5f, 2), 0f, 1f));
+            Color lightColor = Tmp.c1.set(baseColor).mul(lightVal);
+
+            color(lightColor, fout * fade);
+            Fill.square(lx, ly, size, rand.random(360f));
+
+            color(lightColor, fout * fade * 0.5f);
+            Fill.circle(cx, cy, size * 0.7f);
+
+            color(lightColor, fout * fade);
+            Fill.circle(cx + randB, cy + randB, size * 0.45f);
+
+            float shockStart = 0.92f;
+            if(fall >= shockStart){
+                float local = Mathf.clamp((fall - shockStart) / (1f - shockStart));
+                float ringRadius = size * (2f + local * 2.5f);
+                float ringAlpha = 0.6f * fout * fade * (1f - local);
+
+                if(randSize > ((randMin + randMax) / 2f)){
+                    Lines.stroke(Mathf.clamp(size * 0.05f * fout * fade, 0.2f, 1f));
+                    color(lightColor, ringAlpha);
+                    Lines.circle(lx, ly, ringRadius);
+                }
+
+                int dustCount = 6;
+                for(int d = 0; d < dustCount; d++){
+                    float dang = rand.random(360f);
+                    float doff = rand.random(size * 1.2f, size * 3.5f) * (1f + local);
+                    float dsize = rand.random(size * 0.5f, size * 1f) * (1f - local * 0.5f);
+                    randLenVectors(rand.random(e.id), 1, 1f, (vx, vy) -> {
+                        float lenv = Mathf.sqrt(vx * vx + vy * vy);
+                        float scale = doff / (lenv <= 0.0001f ? 1f : lenv);
+
+                        color(Tmp.c1.set(baseColor).mul(lightVal), ringAlpha * 0.5f);
+                        Fill.circle(lx + vx * scale, ly + vy * scale, dsize);
+                    });
+                }
+            }
+        }
+
+    }).layer(Layer.debris),
+
     landShock = new Effect(12, e -> {
         color(Pal.lancerLaser);
         stroke(e.fout() * 3f);
@@ -551,6 +714,7 @@ public class Fx{
             });
         }
     }),
+
     titanSmokeSmall = new Effect(200f, 200f, b -> {
         float intensity = 2.5f;
 
@@ -732,6 +896,18 @@ public class Fx{
         for(int s : Mathf.signs){
             Drawf.tri(e.x, e.y, e.fout() * 25f, e.foutpow() * 66f + 6f, e.rotation + s * 90f);
         }
+    }),
+
+    randomSlashes = new Effect(20f, e -> {
+        color(e.color);
+        for(int i = 0; i < 6; i++){
+            float rot = Mathf.randomSeed(e.id + i, 360f);
+            float cy = e.y + Angles.trnsy(rot, Mathf.randomSeed(e.id + i, 8f));
+
+            Lines.stroke(2f * e.fout() * rand.random(0.5f, 0.8f));
+            Lines.lineAngle(e.x, cy, rot + 45f, Mathf.randomSeed(e.id + i * 2, 10f, 50f) * e.fout());
+        }
+
     }),
 
     dynamicSpikes = new Effect(40f, 100f, e -> {
@@ -969,11 +1145,11 @@ public class Fx{
             );
         });
 
-        float tSize = 110f * e.fout();
+        float tSize = 90f;
 
         color(flare);
         for(int i : Mathf.signs){
-            Drawf.tri(e.x, e.y, tSize * 0.2f, 110f, e.rotation + i * 90f);
+            Drawf.tri(e.x, e.y, tSize * 0.2f * e.fout(), tSize, e.rotation + i * 90f);
         }
 
         Drawf.light(e.x, e.y, tSize, flare, 0.4f);
@@ -1358,6 +1534,19 @@ public class Fx{
         color(e.color);
         Fill.circle(e.x, e.y, e.rotation * e.fout());
     }).layer(Layer.bullet - 0.001f),
+
+    largeMissileTrail = new Effect(25f, e -> {
+        float lineLen = Mathf.lerp(12f, 0f, e.fin());
+        color(Color.white, e.color, e.fin(Interp.pow2Out));
+        stroke(Mathf.lerp(1f, 0f, e.fin()));
+
+        for(int s : Mathf.signs){
+            float angle = e.rotation + (20f + Mathf.randomSeedRange(e.id, 25f)) * s;
+            Tmp.v1.trns(angle, 20f * e.fin(Interp.pow2Out));
+            Lines.lineAngle(e.x + Tmp.v1.x, e.y + Tmp.v1.y, angle, lineLen);
+            Drawf.light(e.x + Tmp.v1.x, e.y + Tmp.v1.y, lineLen * 2f, getColor(), 0.6f * getColorAlpha());
+        }
+    }),
 
     bulletSparkSmokeTrailSmall = new Effect(28f, e -> {
         color(e.color);
@@ -2380,6 +2569,79 @@ public class Fx{
         }
 
         Drawf.light(e.x, e.y, 60f * e.fout(), Pal.orangeSpark, 0.5f);
+    }),
+
+    locusRail = new Effect(20f, e -> {
+        if(!(e.data instanceof Vec2 vec)) return;
+
+        color(e.color);
+        stroke(e.fout() * 0.9f + 0.6f);
+
+        rand.setSeed(e.id);
+        for(int i = 0; i < 7; i++){
+            v.trns(e.rotation, rand.random(8f, vec.dst(e.x, e.y) - 8f));
+            Lines.lineAngleCenter(e.x + v.x, e.y + v.y, e.rotation + e.finpow(), e.foutpowdown() * 20f * rand.random(0.5f, 1f) + 0.3f);
+        }
+
+        e.scaled(14f, b -> {
+            stroke(b.fout() * 1.5f);
+            color(e.color);
+            Lines.line(e.x, e.y, vec.x, vec.y);
+        });
+    }),
+
+    railSmoke = new Effect(32f, e -> {
+        if(!(e.data instanceof Vec2 vec)) return;
+        rand.setSeed(e.id);
+
+        int parts = 30;
+        for(int i = 0; i < parts; i++){
+            v.trns(e.rotation, rand.random(6f, vec.dst(e.x, e.y) - 6f));
+            float side = rand.range(14f), fwrd = rand.range(4f);
+            float driftX = -Mathf.sinDeg(e.rotation) * side + Mathf.cosDeg(e.rotation) * fwrd;
+            float driftY =  Mathf.cosDeg(e.rotation) * side + Mathf.sinDeg(e.rotation) * fwrd;
+            float local = Mathf.clamp((e.fin() - rand.random(0.6f)) * 2f);
+
+            float px = e.x + v.x + driftX * local;
+            float py = e.y + v.y + driftY * local;
+
+            color(Color.lightGray, e.fout() * (1f - local) * 0.6f);
+            Fill.circle(px, py, rand.random(1.8f, 4.2f) * (1f + local));
+        }
+    }),
+
+    smokeRailHit = new Effect(36f, e -> {
+        Fx.rand.setSeed(e.id);
+        float tSize = 28f;
+
+        color(e.color, e.fout());
+        for(int i : Mathf.signs){
+            Drawf.tri(e.x, e.y, tSize * 0.2f * e.fout(), tSize, e.rotation + i * 90f);
+        }
+
+        int particles = 8;
+        for(int i = 0; i < particles; i++){
+            float ang = e.rotation + Fx.rand.range(40f);
+            float dist = Fx.rand.random(8f, 42f) * e.fin();
+
+            float px = e.x + Angles.trnsx(ang, dist);
+            float py = e.y + Angles.trnsy(ang, dist);
+
+            color(Color.lightGray, e.fout() * 0.8f);
+            Fill.circle(px, py, Fx.rand.random(1f, 1.8f));
+        }
+
+        int chunks = 4;
+        for(int i = 0; i < chunks; i++){
+            float ang = e.rotation + Fx.rand.range(25f);
+            float dist = Fx.rand.random(10f, 36f) * e.fin();
+
+            float px = e.x + Angles.trnsx(ang, dist);
+            float py = e.y + Angles.trnsy(ang, dist);
+
+            color(e.color, e.fout());
+            Fill.square(px, py, Fx.rand.random(2.5f, 5f), Fx.rand.random(360f));
+        }
     }),
 
     railHit = new Effect(18f, 200f, e -> {

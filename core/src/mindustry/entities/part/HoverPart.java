@@ -13,6 +13,11 @@ public class HoverPart extends DrawPart{
     public float layer = -1f, layerOffset = 0f;
 
     @Override
+    public boolean isMirrored(){
+        return mirror;
+    }
+
+    @Override
     public void draw(PartParams params){
         float z = Draw.z();
         if(layer > 0) Draw.z(layer);
