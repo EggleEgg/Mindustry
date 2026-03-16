@@ -2675,7 +2675,7 @@ public class Blocks{
             requirements(Category.power, with(Items.beryllium, 30, Items.oxide, 10, Items.silicon, 10));
             size = 3;
             consumesPower = outputsPower = true;
-            range = 23;
+            range = 30;
             scaledHealth = 90;
             fogRadius = 2;
 
@@ -2683,8 +2683,7 @@ public class Blocks{
         }};
 
         beamLink = new LongPowerNode("beam-link"){{
-            requirements(Category.power, with(Items.beryllium, 250, Items.silicon, 250, Items.oxide, 150, Items.carbide, 75, Items.surgeAlloy, 75, Items.phaseFabric, 75));
-            size = 3;
+        requirements(Category.power, with(Items.beryllium, 120, Items.silicon, 120, Items.oxide, 75, Items.carbide, 50, Items.surgeAlloy, 25, Items.phaseFabric, 25));            size = 3;
             maxNodes = 1;
             laserRange = 500f;
             powerLayer = Layer.legUnit + 2f;
@@ -2693,6 +2692,7 @@ public class Blocks{
             laserColor2 = Color.valueOf("ffd9c2");
             laserScale = 0.8f;
             scaledHealth = 130;
+            consumePowerBuffered(32000f);
         }};
 
         turbineCondenser = new ThermalGenerator("turbine-condenser"){{
@@ -4418,7 +4418,8 @@ public class Blocks{
                 trailEffect = Fx.disperseTrail;
                 trailInterval = 2f;
                 hitEffect = despawnEffect = Fx.hitBulletColor;
-                rangeChange = 7f*8f;
+                rangeChange = (7f + 8.1f / 2f) * 8f;
+                extraRangeMargin = -8.1f * 8f;                
                 buildingDamageMultiplier = 0.3f;
                 trailRotation = true;
                 shootSound = Sounds.shootBreachCarbide;
