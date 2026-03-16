@@ -3094,6 +3094,7 @@ public class Blocks{
             researchCostMultiplier = 0.5f;
 
             drillMultipliers.put(Items.beryllium, 2f);
+            drillMultipliers.put(Items.sand, 2f);
             liquidBoostIntensity = 1.75f;
 
             fogRadius = 4;
@@ -3125,6 +3126,7 @@ public class Blocks{
             fogRadius = 5;
 
             drillMultipliers.put(Items.beryllium, 2f);
+            drillMultipliers.put(Items.sand, 2f);
             liquidBoostIntensity = 2f;
 
             //TODO different requirements
