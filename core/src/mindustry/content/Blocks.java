@@ -4684,7 +4684,7 @@ public class Blocks{
                 trailInterp = v -> Math.max(Mathf.slope(v), 0.8f);
                 shrinkX = 0.2f;
                 shrinkY = 0.1f;
-                buildingDamageMultiplier = 0.3f;
+                buildingDamageMultiplier = 0.1f;
             }},
             Items.carbide, new ArtilleryBulletType(3.25f, 700, "shell"){{
                 hitEffect = new MultiEffect(Fx.titanExplosionSmall, Fx.titanSmokeSmall);
@@ -4720,7 +4720,7 @@ public class Blocks{
                 trailInterp = v -> Math.max(Mathf.slope(v), 0.8f);
                 shrinkX = 0.2f;
                 shrinkY = 0.1f;
-                buildingDamageMultiplier = 0.2f;
+                buildingDamageMultiplier = 0.1f;
                 fragLifeMin = 1.5f;
 
                 fragBullets = 12;
@@ -4742,7 +4742,7 @@ public class Blocks{
                         pierceArmor = true;
                         backColor = frontColor = hitColor = Color.valueOf("ab8ec5");
                         frontColor = Color.white;
-                        buildingDamageMultiplier = 0.25f;
+                        buildingDamageMultiplier = 0.1f;
                         shrinkY = 0.3f;
                     }};
             }},
@@ -4777,7 +4777,7 @@ public class Blocks{
                 trailInterp = v -> Math.max(Mathf.slope(v), 0.8f);
                 shrinkX = 0.2f;
                 shrinkY = 0.1f;
-                buildingDamageMultiplier = 0.25f;
+                buildingDamageMultiplier = 0.1f;
                 status = StatusEffects.corroded;
                 statusDuration = 60f * 8f;
 
@@ -5054,7 +5054,7 @@ public class Blocks{
                 trailInterval = 3f;
                 trailParam = 4f;
                 pierceCap = 2;
-                buildingDamageMultiplier = 0.5f;
+                buildingDamageMultiplier = 0.1f;
                 fragOnHit = false;
                 speed = 5f;
                 damage = 180f;
@@ -5094,7 +5094,7 @@ public class Blocks{
                         strokeFrom = 4f;
                         lifetime = 10f;
                     }};
-                    buildingDamageMultiplier = 0.3f;
+                    buildingDamageMultiplier = 0.1f;
                     homingPower = 0.1f;
                 }};
 
