@@ -1983,6 +1983,8 @@ public class Blocks{
             tileDamage = 7f;
             length = 10;
             tendrils = 4;
+            activationTime = 60f * 1f;
+            underBullets = true;
         }};
 
         radar = new Radar("radar"){{

@@ -621,7 +621,11 @@ abstract class BuildingComp implements Posc, Teamc, Healthc, Buildingc, Timerc, 
             (tile instanceof EditorTile || block.privileged || !state.rules.limitMapArea || !state.rules.disableOutsideArea || Rect.contains(state.rules.limitX, state.rules.limitY, state.rules.limitWidth, state.rules.limitHeight, tile.x, tile.y));
     }
 
-    public BlockStatus status(){
+    public @Nullable BlockStatus status(){
+        if(block.consumers.length <= 0){
+            return null;
+        }
+
         if(!enabled){
             return BlockStatus.logicDisable;
         }
@@ -1206,7 +1210,7 @@ abstract class BuildingComp implements Posc, Teamc, Healthc, Buildingc, Timerc, 
     }
 
     public void drawStatus(){
-        if(block.enableDrawStatus && block.consumers.length > 0){
+        if(block.enableDrawStatus && status() != null){
             float multiplier = block.size > 1 ? 1 : 0.64f;
             float brcx = x + (block.size * tilesize / 2f) - (tilesize * multiplier / 2f);
             float brcy = y - (block.size * tilesize / 2f) + (tilesize * multiplier / 2f);

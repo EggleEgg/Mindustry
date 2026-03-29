@@ -510,7 +510,7 @@ public class BlockRenderer{
                             build.drawTeam();
                             Draw.z(Layer.block);
                         }
-                    }else if(renderer.drawStatus && block.hasConsumers){
+                    }else if(renderer.drawStatus){
                         build.drawStatus();
                     }
                 }
