@@ -3655,7 +3655,7 @@ public class UnitTypes{
             speed = 0.6f;
             hitSize = 30f;
             health = 6500;
-            armor = 5f;
+            armor = 8f;
 
             lockLegBase = true;
             legContinuousMove = true;
