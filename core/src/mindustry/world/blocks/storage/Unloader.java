@@ -93,6 +93,8 @@ public class Unloader extends Block{
         public Item sortItem = null;
         public ContainerStat dumpingFrom, dumpingTo;
         public final Seq<ContainerStat> possibleBlocks = new Seq<>(ContainerStat.class);
+        public final BoolSeq itemCanUnload = new BoolSeq(allItems != null ? allItems.length : 16);
+        public final BoolSeq itemCanReceived = new BoolSeq(allItems != null ? allItems.length : 16);
 
         protected final Comparator<ContainerStat> comparator = (x, y) -> {
             //sort so it gives priority for blocks that can only either receive or give (not both), and then by load, and then by last use
@@ -165,10 +167,39 @@ public class Unloader extends Block{
             if(sortItem != null){
                 if(isPossibleItem(sortItem)) item = sortItem;
             }else{
+                int len = allItems.length;
+                var pbi = possibleBlocks.items;
+                int pbs = possibleBlocks.size;
+
+                Arrays.fill(itemCanUnload.items, false);
+                Arrays.fill(itemCanReceived.items, false);
+
+                for(int i = 0; i < pbs; i++){
+                    var pb = pbi[i];
+                    var other = pb.building;
+
+                    for(int j = 0; j < len; j++){
+                        var it = allItems[j];
+
+                        //items that have stock in at least one neighbour
+                        if(other.canUnload() && other.items != null && other.items.has(it)){
+                            itemCanUnload.items[j] = true;
+                        }
+                        //items that at least one neighbour will accept
+                        if(pb.notStorage && other.acceptItem(this, it)){
+                            itemCanReceived.items[j] = true;
+                        }
+                    }
+                }
+
                 //selects the next item for nulloaders
                 //inspired of nextIndex() but for all "proximity" (possibleBlocks) at once, and also way more powerful
-                for(int i = 0, l = allItems.length; i < l; i++){
-                    int id = (rotations + i + 1) % l;
+                for(int i = 0; i < len; i++){
+                    int id = (rotations + i + 1) % len;
+
+                    //isPossibleItem() is expensive, avoid calls whenever possible
+                    if(!itemCanUnload.items[id] || !itemCanReceived.items[id]) continue;
+
                     var possibleItem = allItems[id];
 
                     if(isPossibleItem(possibleItem)){
