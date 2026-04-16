@@ -97,6 +97,9 @@ public class RepairFieldAbility extends Ability{
             float healPercentMult = healPercent / 100f;
 
             Units.nearby(unit.team, unit.x, unit.y, range, other -> {
+                //check for 2 more targets just in case
+                if(limitTargets && targets.size >= maxTargets + 2) return;
+
                 if(other.damaged()){
                     targets.add(other);
                     if(smartHeal){
