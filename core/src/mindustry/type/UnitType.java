@@ -94,7 +94,13 @@ public class UnitType extends UnlockableContent implements Senseable{
     /** range at which this unit can mine ores */
     mineRange = 70f,
     /** range at which this unit can build */
-    buildRange = Vars.buildingRange,
+    buildRange = Vars.buildingRange;
+    /** number of concurrent assisting builder units where buildspeed penalty starts */
+    public int assistUnitCap = -1;
+    /** how fast the penalty linearly ramps up per unit assisting  */
+    public float assistPenaltyScale = 1f,
+    /** maximum assist buildspeed penalty multiplier per unit */
+    assistPenaltyMax = 0.5f,
     /** radius for circleTarget, if true */
     circleTargetRadius = 80f,
     /** multiplier for damage this (flying) unit deals when crashing on enemy things */
