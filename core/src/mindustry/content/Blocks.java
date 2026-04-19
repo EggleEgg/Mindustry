@@ -5320,7 +5320,7 @@ public class Blocks{
                 shootEffect = Fx.shootBig;
                 smokeEffect = Fx.shootSmokeMissileColor;
                 hitColor = Color.valueOf("ffd37f");
-                ammoMultiplier = 5f;
+                ammoMultiplier = 3f;
                 reloadMultiplier = 0.8f;
 
                 spawnUnit = new MissileUnitType("scathe-missile-phase"){{
@@ -5356,7 +5356,7 @@ public class Blocks{
 
                     fogRadius = 6f;
 
-                    health = 500;
+                    health = 350;
 
                     weapons.add(new Weapon(){{
                         shootCone = 360f;
@@ -5365,10 +5365,10 @@ public class Blocks{
                         deathExplosionEffect = Fx.massiveExplosion;
                         shootOnDeath = true;
                         shake = 10f;
-                        bullet = new ExplosionBulletType(320f, 120f){{
+                        bullet = new ExplosionBulletType(280f, 120f){{
+                            //mirror stats
                             reloadMultiplier = 0.8f;
-                            ammoMultiplier = 5f;
-
+                            ammoMultiplier = 3f;
                             hitColor = engineColor;
                             shootEffect = new MultiEffect(Fx.massiveExplosion, Fx.scatheExplosion, Fx.scatheLight, new WaveEffect(){{
                                 lifetime = 10f;
@@ -5391,7 +5391,7 @@ public class Blocks{
                                 width = height = 18f;
                                 collidesTiles = false;
                                 splashDamageRadius = 56f;
-                                splashDamage = 120f;
+                                splashDamage = 85f;
                                 backColor = trailColor = hitColor = engineColor;
                                 frontColor = Color.white;
                                 smokeEffect = Fx.shootBigSmoke2;
@@ -5415,7 +5415,7 @@ public class Blocks{
                         interval = 15f;
                     }});
 
-                    abilities.add(new ForceFieldAbility(120f, 0f, 3000f, 999999999f));
+                    abilities.add(new ForceFieldAbility(120f, 0f, 2500f, 999999999f));
 
                 }};
             }},
@@ -5425,8 +5425,7 @@ public class Blocks{
                 smokeEffect = Fx.shootSmokeMissileColor;
                 hitColor = Color.valueOf("f7e97e");
 
-                ammoMultiplier = 1f;
-                reloadMultiplier = 0.9f;
+                ammoMultiplier = 0.75f;
 
                 spawnUnit = new MissileUnitType("scathe-missile-surge"){{
                     speed = 4.4f;
@@ -5462,8 +5461,7 @@ public class Blocks{
                         shake = 10f;
                         bullet = new ExplosionBulletType(1800f, 40f){{
                             //mirror stats
-                            ammoMultiplier = 1f;
-                            reloadMultiplier = 0.9f;
+                            ammoMultiplier = 0.75f;
                             lightning = 10;
                             lightningDamage = 45f;
                             lightningLength = 12;
