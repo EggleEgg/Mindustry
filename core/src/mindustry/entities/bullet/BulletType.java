@@ -111,6 +111,7 @@ public class BulletType extends Content implements Cloneable{
     public boolean scaledSplashDamage = false;
     /** Knockback in velocity. */
     public float knockback;
+    public float 
     /** Should knockback follow the bullet's direction */
     public boolean impact;
     /** Status effect applied on hit. */
@@ -505,9 +506,7 @@ public class BulletType extends Content implements Cloneable{
         }
 
         if(entity instanceof Unit unit){
-            Tmp.v3.set(unit).sub(b).nor().scl(knockback * 80f);
-            if(impact) Tmp.v3.setAngle(b.rotation() + (knockback < 0 ? 180f : 0f));
-            unit.impulse(Tmp.v3);
+            applyKnockback(b, unit, b.x, b.y);
             unit.apply(status, statusDuration);
 
             Events.fire(bulletDamageEvent.set(unit, b));
@@ -590,9 +589,28 @@ public class BulletType extends Content implements Cloneable{
         }
     }
 
+    public void applyKnockback(Bullet b, Unit unit, float x, float y){
+        Tmp.v3.set(unit).sub(x, y).nor().scl(knockback * 80f);
+        if(impact) Tmp.v3.setAngle(b.rotation() + (knockback < 0 ? 180f : 0f));
+        unit.impulse(Tmp.v3);
+    }
+
+    public void createSplashKnockback(Bullet b, float x, float y){
+        if(Mathf.zero(knockback)) return;
+
+        Units.nearbyEnemies(b.team, Tmp.r1.setSize(splashDamageRadius * 2f).setCenter(x, y), unit -> {
+            if(!unit.checkTarget(collidesAir, collidesGround) || !unit.hittable() || !unit.within(x, y, splashDamageRadius + (scaledSplashDamage ? unit.hitSize / 2f : 0f))){
+                return;
+            }
+
+            applyKnockback(b, unit, x, y);
+        });
+    }
+
     public void createSplashDamage(Bullet b, float x, float y){
         if(splashDamageRadius > 0 && !b.absorbed){
             Damage.damage(b.team, x, y, splashDamageRadius, splashDamage * b.damageMultiplier(), splashDamagePierce, collidesAir, collidesGround, scaledSplashDamage, b);
+            createSplashKnockback(b, x, y);
 
             if(status != StatusEffects.none){
                 Damage.status(b.team, x, y, splashDamageRadius, status, statusDuration, collidesAir, collidesGround);

@@ -3482,6 +3482,7 @@ public class Blocks{
                     collidesTiles = false;
                     splashDamageRadius = 25f * 0.75f;
                     splashDamage = 33f;
+                    knockback = 100f;
 
                     hitColor = backColor = trailColor = Pal.graphiteAmmoBack;
                     frontColor = Pal.graphiteAmmoFront;
