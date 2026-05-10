@@ -4,6 +4,7 @@ import arc.audio.*;
 import arc.graphics.g2d.*;
 import arc.math.*;
 import arc.math.geom.*;
+import arc.scene.ui.layout.*;
 import arc.struct.*;
 import arc.util.*;
 import arc.util.io.*;
@@ -112,6 +113,7 @@ public class MassDriver extends Block{
         public float rotation = 90;
         public float reloadCounter = 0f;
         public DriverState state = DriverState.idle;
+        public Item sortItem = null;
         //TODO use queue? this array usually holds about 3 shooters max anyway
         public OrderedSet<Building> waitingShooters = new OrderedSet<>();
 
@@ -233,6 +235,11 @@ public class MassDriver extends Block{
             Draw.rect(region,
             x + Angles.trnsx(rotation + 180f, reloadCounter * knockback),
             y + Angles.trnsy(rotation + 180f, reloadCounter * knockback), rotation - 90);
+
+            if(sortItem != null){
+                Draw.z(Layer.overlayUI);
+                drawItemSelection(sortItem, 2f, -2f, 2f);
+            }
         }
 
         @Override
@@ -344,9 +351,19 @@ public class MassDriver extends Block{
         }
 
         @Override
+        public void buildConfiguration(Table table){
+            ItemSelection.buildTable(MassDriver.this, table, content.items(), () -> sortItem, (item) -> sortItem = item, selectionRows, selectionColumns);
+        }
+
+        @Override
         public Point2 config(){
             if(tile == null) return null;
             return Point2.unpack(link).sub(tile.x, tile.y);
+        }
+
+        @Override
+        public byte version(){
+            return 1;
         }
 
         @Override
@@ -355,6 +372,7 @@ public class MassDriver extends Block{
             write.i(link);
             write.f(rotation);
             write.b((byte)state.ordinal());
+            write.s(sortItem == null ? -1 : sortItem.id);
         }
 
         @Override
@@ -363,6 +381,10 @@ public class MassDriver extends Block{
             link = read.i();
             rotation = read.f();
             state = DriverState.all[read.b()];
+            short itemId = read.s();
+            if(revision >= 1){
+                sortItem = itemId == -1 ? null : content.item(itemId);
+            }
         }
     }
 

@@ -1239,8 +1239,13 @@ abstract class BuildingComp implements Posc, Teamc, Healthc, Buildingc, Timerc, 
     }
 
     public void drawItemSelection(@Nullable UnlockableContent selection){
+        drawItemSelection(selection, 0f , 0f, 0f);
+    }
+
+    public void drawItemSelection(@Nullable UnlockableContent selection, float offsetX, float offsetY, float iconSize){
         if(selection != null){
-            float dx = x - block.size * tilesize/2f, dy = y + block.size * tilesize/2f, s = iconSmall / 4f * selection.fullIcon.ratio(), h = iconSmall / 4f;
+            float dx = x - block.size * tilesize/2f + offsetX, dy = y + block.size * tilesize/2f + offsetY;
+            float s = iconSmall / 4f * selection.fullIcon.ratio() + iconSize, h = iconSmall / 4f + iconSize;
             Draw.mixcol(Color.darkGray, 1f);
             Draw.rect(selection.fullIcon, dx, dy - 1, s, h);
             Draw.reset();
