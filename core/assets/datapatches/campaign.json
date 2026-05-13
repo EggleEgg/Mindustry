@@ -1,0 +1,11 @@
+name: Campaign experimental datapatch preset
+
+block: {
+    duo: {
+        ammoTypes: {
+            copper: {
+                damage: 99999
+            }
+        }
+    }
+}

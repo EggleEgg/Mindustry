@@ -1,0 +1,11 @@
+name: Survival datapatch preset
+
+block: {
+    scorch: {
+        ammoTypes: {
+            pyratite: {
+                damage: 60
+            }
+        }
+    }
+}

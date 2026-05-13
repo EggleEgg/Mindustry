@@ -1,0 +1,11 @@
+name: Sandbox datapatch preset
+
+block: {
+    scorch: {
+        ammoTypes: {
+            pyratite: {
+                damage: 60
+            }
+        }
+    }
+}
