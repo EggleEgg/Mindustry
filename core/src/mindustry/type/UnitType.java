@@ -110,6 +110,8 @@ public class UnitType extends UnlockableContent implements Senseable{
     strafePenalty = 0.5f,
     /** multiplier for cost of research in tech tree */
     researchCostMultiplier = 50,
+    /** A multiplier on this unit s specific unitcap. */
+    unitCapMultiplier = 1f,
 
     /** for ground units, the layer upon which this unit is drawn */
     groundLayer = Layer.groundUnit,

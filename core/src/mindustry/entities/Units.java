@@ -2,6 +2,7 @@ package mindustry.entities;
 
 import arc.*;
 import arc.func.*;
+import arc.math.*;
 import arc.math.geom.*;
 import arc.struct.*;
 import arc.util.*;
@@ -113,20 +114,28 @@ public class Units{
 
     /** @return whether a new instance of a unit of this team can be created. */
     public static boolean canCreate(Team team, UnitType type){
-        return !type.useUnitCap || (team.data().countType(type) < getCap(team) && !type.isBanned());
+        return !type.useUnitCap || ((team.data().countType(type)) < (getCap(team) * type.unitCapMultiplier) && !type.isBanned());
     }
 
     public static int getCap(Team team){
+        return getCap(team, null);
+    }
+
+    public static int getCap(Team team, @Nullable UnitType type){
         //wave team has no cap
         if((team == state.rules.waveTeam && !state.rules.pvp) || (state.isCampaign() && team == state.rules.waveTeam) || state.rules.disableUnitCap || team.ignoreUnitCap){
             return Integer.MAX_VALUE;
         }
-        return Math.max(0, state.rules.unitCapVariable ? state.rules.unitCap + team.data().unitCap : state.rules.unitCap);
+        return Math.max(0, Mathf.floor((state.rules.unitCapVariable ? state.rules.unitCap + team.data().unitCap : state.rules.unitCap) * (type != null ? type.unitCapMultiplier : 1)));
+    }
+
+    public static String getStringCap(Team team){
+        return getStringCap(team, null);
     }
 
     /** @return unit cap as a string, substituting the infinity symbol instead of MAX_VALUE */
-    public static String getStringCap(Team team){
-        int cap = getCap(team);
+    public static String getStringCap(Team team, @Nullable UnitType type){
+        int cap = getCap(team, type);
         return cap >= Integer.MAX_VALUE - 1 ? "∞" : cap + "";
     }
 

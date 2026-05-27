@@ -102,6 +102,7 @@ public class UnitTypes{
             hitSize = 8f;
             health = 150;
             stepSoundVolume = 0.4f;
+            unitCapMultiplier = 20f;
 
             weapons.add(new Weapon("large-weapon"){{
                 reload = 13f;

@@ -525,7 +525,7 @@ abstract class UnitComp implements Healthc, Physicsc, Hitboxc, Statusc, Teamc, I
     }
 
     public int cap(){
-        return Units.getCap(team);
+        return Units.getCap(team, type);
     }
 
     public void setType(UnitType type){
@@ -588,7 +588,7 @@ abstract class UnitComp implements Healthc, Physicsc, Hitboxc, Statusc, Teamc, I
         team.data().updateCount(type, 1);
 
         //check if over unit cap
-        if(type.useUnitCap && count() > cap() && !spawnedByCore && !dead && !state.rules.editor){
+        if(type.useUnitCap && (count()) > (cap() * type.unitCapMultiplier) && !spawnedByCore && !dead && !state.rules.editor){
             Call.unitCapDeath(self());
             team.data().updateCount(type, -1);
         }
