@@ -5,6 +5,9 @@ import arc.func.*;
 import arc.math.geom.*;
 import arc.struct.*;
 import arc.util.*;
+import arc.util.serialization.Json.*;
+import arc.util.serialization.*;
+import arc.util.serialization.JsonWriter.*;
 import arc.util.io.*;
 import mindustry.content.*;
 import mindustry.content.TechTree.*;
@@ -16,6 +19,7 @@ import mindustry.game.EventType.*;
 import mindustry.game.Teams.*;
 import mindustry.gen.*;
 import mindustry.maps.Map;
+import mindustry.mod.*;
 import mindustry.type.*;
 import mindustry.world.*;
 import mindustry.world.meta.*;
@@ -521,29 +525,48 @@ public abstract class SaveVersion extends SaveFileReader{
     public void skipContentPatches(DataInput stream) throws IOException{
         int amount = stream.readUnsignedByte();
         for(int i = 0; i < amount; i++){
+            if(version >= 12) stream.readBoolean();
             int len = stream.readInt();
             stream.skipBytes(len);
         }
     }
 
     public void readContentPatches(DataInput stream) throws IOException{
-        Seq<String> patches = new Seq<>();
+        Seq<DataPatcher.PatchSet> sets = new Seq<>();
 
         int amount = stream.readUnsignedByte();
         if(amount > 0){
             for(int i = 0; i < amount; i++){
-                int len = stream.readInt();
-                byte[] bytes = new byte[len];
+                boolean enabled = version >= 12 ? stream.readBoolean() : true;
+                byte[] bytes = new byte[stream.readInt()];
                 stream.readFully(bytes);
-                patches.add(new String(bytes, Strings.utf8));
+                var set = new DataPatcher.PatchSet(new String(bytes, Strings.utf8));
+                set.enabled = enabled;
+                set.persistSave = true;
+                sets.add(set);
             }
         }
 
+        Seq<String> patches = sets.map(set -> set.patch);
         Events.fire(new ContentPatchLoadEvent(patches));
 
         if(patches.size > 0){
             try{
-                state.patcher.apply(patches);
+                ObjectMap<String, IntSeq> enabled = new ObjectMap<>();
+                for(var set : sets){
+                    enabled.get(set.patch, IntSeq::new).add(set.enabled ? 1 : 0);
+                }
+
+                Seq<DataPatcher.PatchSet> toApply = new Seq<>(patches.size);
+                for(var patch : patches){
+                    var set = new DataPatcher.PatchSet(patch);
+                    var queue = enabled.get(patch);
+                    if(queue != null && queue.size > 0){
+                        set.enabled = queue.removeIndex(0) == 1;
+                    }
+                    toApply.add(set);
+                }
+                state.patcher.applySets(toApply);
             }catch(Throwable e){
                 Log.err("Failed to apply patches: " + patches, e);
             }
@@ -551,10 +574,16 @@ public abstract class SaveVersion extends SaveFileReader{
     }
 
     public void writeContentPatches(DataOutput stream) throws IOException{
-        if(state.patcher.patches.size > 0){
-            var patches = state.patcher.patches;
-            stream.writeByte(patches.size);
-            for(var patchset : patches){
+        int toSave = 0;
+        for(var patchset : state.patcher.patches){
+            if(patchset.persistSave) toSave++;
+        }
+
+        if(toSave > 0){
+            stream.writeByte(toSave);
+            for(var patchset : state.patcher.patches){
+                if(!patchset.persistSave) continue;
+                if(version >= 12) stream.writeBoolean(patchset.enabled);
                 byte[] bytes = patchset.patch.getBytes(Strings.utf8);
                 stream.writeInt(bytes.length);
                 stream.write(bytes);

@@ -67,8 +67,32 @@ public class DataPatcher{
         return usedpatches.contains(object);
     }
 
-    /** Applies the specified patches. If patches were already applied, the previous ones are un-applied - they do not stack! */
+    /** Used to strip the enabled field */
+    public static String externalize(String patch){
+        try{
+            JsonValue value = parser.getJson().fromJson(null, Jval.read(patch).toString(Jformat.plain));
+            if(value != null && value.isObject()){
+                value.remove("enabled");
+                return value.prettyPrint(OutputType.minimal, 2);
+            }
+        }catch(Throwable ignored){
+        }
+        return patch;
+    }
+
+    /** @see #applySets(Seq) */
     public void apply(Seq<String> patchArray) throws Exception{
+        Seq<PatchSet> sets = new Seq<>(patchArray.size);
+        for(String patch : patchArray){
+            sets.add(new PatchSet(patch));
+        }
+        applySets(sets);
+    }
+
+    /** Applies the specified patches. If patches were already applied, the previous ones are un-applied - they do not stack! */
+    public void applySets(Seq<PatchSet> patchArray) throws Exception{
+        var inputs = patchArray.copy();
+
         if(applied){
             unapply();
             applied = false;
@@ -85,11 +109,14 @@ public class DataPatcher{
             Attribute.map = oldAttributeMap;
         });
 
-        for(String patch : patchArray){
-            PatchSet set = new PatchSet(patch, new JsonValue("error"));
+        for(var input : inputs){
+            PatchSet set = new PatchSet(input.patch);
+            set.enabled = input.enabled;
+            set.modifiable = input.modifiable;
+            set.persistSave = input.persistSave;
 
             try{
-                JsonValue value = parser.getJson().fromJson(null, Jval.read(patch).toString(Jformat.plain));
+                JsonValue value = parser.getJson().fromJson(null, Jval.read(input.patch).toString(Jformat.plain));
                 if(Vars.state.rules.planet != null && value.has("requiredPlanets")){
                     JsonValue req = value.get("requiredPlanets");
                     value.remove("requiredPlanets");
@@ -108,7 +135,13 @@ public class DataPatcher{
                 visitStack.clear();
 
                 set.name = value.getString("name", "");
+                set.enabled = value.getBoolean("enabled", set.enabled); //reading json enabled is technically not necessary but might be useful
                 value.remove("name"); //patchsets can have a name, ignore it if present
+                value.remove("enabled");
+                if(!set.enabled){
+                    currentlyApplying = null;
+                    continue;
+                }
                 for(var child : value){
                     assign(root, child.name, child, null, null, null);
                 }
@@ -119,7 +152,7 @@ public class DataPatcher{
                 set.warnings.add(Strings.getSimpleMessage(e));
                 currentlyApplying = null;
 
-                Log.err("Failed to apply patch: " + patch, e);
+                Log.err("Failed to apply patch: " + input.patch, e);
             }
 
             patches.add(set);
@@ -631,8 +664,18 @@ public class DataPatcher{
         public String patch;
         public JsonValue json;
         public String name = "";
+        public boolean enabled = true;
+        /** Whether a patchset can be edited or deleted, but not disabled or moved. */
+        public boolean modifiable = true;
+        /** Allow patchsets to persist in a savefile. */
+        public boolean persistSave = true;
         public boolean error;
         public Seq<String> warnings = new Seq<>();
+
+        public PatchSet(String patch){
+            this.patch = patch;
+            this.json = new JsonValue("error");
+        }
 
         public PatchSet(String patch, JsonValue json){
             this.patch = patch;
