@@ -13,6 +13,7 @@ public class CampaignRules{
     public boolean legacyLaunchPads;
     public boolean rtsAI;
     public boolean clearSectorOnLose;
+    public boolean experimentalPatches;
     public boolean pauseDisabled;
 
     public void apply(Planet planet, Rules rules){

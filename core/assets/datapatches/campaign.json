@@ -1,11 +1,33 @@
 name: Campaign experimental datapatch preset
 
 block: {
-    duo: {
-        ammoTypes: {
-            copper: {
-                damage: 99999
-            }
-        }
+vault: {
+        "itemCapacity": 9999,
+        "saveConfig": false,
+        "configurable": false,
+    },
+liquid-tank: {
+        "liquidCapacity": 50000,
+        "outputsLiquid": true,
+        "liquidPressure": 99.0,
+    },
+container: {
+        "itemCapacity": 1,
+        "saveConfig": true,
+        "configurable": true,
+        "buildCostMultiplier": 0.0
+    },
+ground-factory: {
+        "configurable": true,
+        "saveConfig": false,
+        "sync": false,
+        "rotate": false,
+        "unitCapacity": 0,
+        "outputsLiquid": true
+    },
+battery-large: {
+        "itemCapacity": 500,
+        "saveConfig": true,
+        "configurable": true
     }
 }

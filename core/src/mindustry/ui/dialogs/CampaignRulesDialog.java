@@ -78,6 +78,8 @@ public class CampaignRulesDialog extends BaseDialog{
             if(!planet.clearSectorOnLose){
                 check("@rules.clearsectoronloss", b -> rules.clearSectorOnLose = b, () -> rules.clearSectorOnLose);
             }
+
+            check("@rules.experimentalPatches", b -> rules.experimentalPatches = b, () -> rules.experimentalPatches);
         }).growY();
     }
 

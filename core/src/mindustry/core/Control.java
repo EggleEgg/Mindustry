@@ -10,6 +10,7 @@ import arc.scene.style.*;
 import arc.scene.ui.*;
 import arc.struct.*;
 import arc.util.*;
+import arc.util.serialization.*;
 import mindustry.*;
 import mindustry.audio.*;
 import mindustry.content.*;
@@ -147,14 +148,52 @@ public class Control implements ApplicationListener, Loadable{
         });
 
         Events.on(WorldLoadEvent.class, e -> {
-            String mode = Vars.state.rules.mode().name().toLowerCase();
-            if(mode != null && Vars.tree.get("datapatches/" + mode + ".json") != null){
+            Seq<DataPatcher.PatchSet> runtime = new Seq<>();
+            ObjectSet<String> patchStrings = new ObjectSet<>();
+
+            var modeFile = Vars.tree.get("datapatches/" + state.rules.mode().name().toLowerCase() + ".json");
+            if(modeFile.exists()){
+                String modePatch = modeFile.readString();
+                patchStrings.add(modePatch);
+
+                var set = new DataPatcher.PatchSet(modePatch);
+                set.modifiable = set.persistSave = false;
+                runtime.add(set);
+            }
+
+            var campaignFile = Vars.tree.get("datapatches/campaign.json");
+            if(campaignFile.exists()){
+                String campaignPatch = campaignFile.readString();
+                patchStrings.add(campaignPatch);
+
+                if(state.isCampaign() && state.getPlanet() != null && state.getPlanet().campaignRules.experimentalPatches){
+                    var set = new DataPatcher.PatchSet(campaignPatch);
+                    set.modifiable = set.persistSave = false;
+                    runtime.add(set);
+                }
+            }
+
+            Seq<DataPatcher.PatchSet> combined = new Seq<>();
+            for(var existing : state.patcher.patches){
+                if(patchStrings.contains(existing.patch)) continue;
+
+                var copy = new DataPatcher.PatchSet(existing.patch);
+                copy.enabled = existing.enabled;
+                copy.modifiable = existing.modifiable;
+                copy.persistSave = existing.persistSave;
+                combined.add(copy);
+            }
+            combined.addAll(runtime);
+
+            if(combined.any()){
                 try{
-                    state.patcher.apply(Seq.with(Vars.tree.get("datapatches/" + mode + ".json").readString()));
+                    state.patcher.applySets(combined);
                 }catch(Exception ex){
                     Log.err(ex);
                     ui.showException("@editor.patches.importerror", ex);
                 }
+            }else{
+                state.patcher.unapply();
             }
         });
 
