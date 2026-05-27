@@ -26,6 +26,7 @@ import mindustry.world.*;
 import mindustry.world.blocks.logic.CanvasBlock.*;
 import mindustry.world.blocks.logic.LogicDisplay.*;
 
+import java.io.*;
 import java.lang.annotation.*;
 import java.util.*;
 
@@ -176,9 +177,10 @@ public class MapObjectives implements Iterable<MapObjective>, Eachable<MapObject
     }
 
     /** Base abstract class for any in-map objective. */
-    public static abstract class MapObjective{
+    public static abstract class MapObjective implements Serializable{
         public boolean hidden;
         public @Nullable @Multiline String details;
+        public @Nullable @LogicCode String completionLogicCode;
         public @Unordered String[] flagsAdded = {};
         public @Unordered String[] flagsRemoved = {};
         public ObjectiveMarker[] markers = {};
@@ -207,9 +209,11 @@ public class MapObjectives implements Iterable<MapObjective>, Eachable<MapObject
             state.rules.objectiveFlags.removeAll(flagsRemoved);
             state.rules.objectiveFlags.addAll(flagsAdded);
             completed = true;
+
+            LExecutor.runLogicScript(completionLogicCode);
         }
 
-        /** @return True if all {@link #parents} are completed, rendering this objective able to execute. */
+        /** @return true if all {@link #parents} are completed, rendering this objective able to execute. */
         public final boolean dependencyFinished(){
             if(depFinished) return true;
 
@@ -220,7 +224,7 @@ public class MapObjectives implements Iterable<MapObjective>, Eachable<MapObject
             return depFinished = true;
         }
 
-        /** @return True if this objective is done (practically, has been removed from the executor). */
+        /** @return true if this objective is done (practically, has been removed from the executor). */
         public final boolean isCompleted(){
             return completed;
         }
@@ -313,6 +317,11 @@ public class MapObjectives implements Iterable<MapObjective>, Eachable<MapObject
         public void validate(){
             if(content == null) content = Items.copper;
         }
+
+        @Override
+        public String toString(){
+            return "research: " + content;
+        }
     }
 
     /** Produce a specific piece of content in the tech tree (essentially research with different text). */
@@ -338,6 +347,11 @@ public class MapObjectives implements Iterable<MapObjective>, Eachable<MapObject
         @Override
         public void validate(){
             if(content == null) content = Items.copper;
+        }
+
+        @Override
+        public String toString(){
+            return "produce: " + content;
         }
     }
 
@@ -367,6 +381,11 @@ public class MapObjectives implements Iterable<MapObjective>, Eachable<MapObject
         public void validate(){
             if(item == null) item = Items.copper;
         }
+
+        @Override
+        public String toString(){
+            return "item: " + item + " x"  + amount;
+        }
     }
 
     /** Get a certain item in your core (through a block, not manually.) */
@@ -394,6 +413,11 @@ public class MapObjectives implements Iterable<MapObjective>, Eachable<MapObject
         @Override
         public void validate(){
             if(item == null) item = Items.copper;
+        }
+
+        @Override
+        public String toString(){
+            return "coreItem: " + item + " x"  + amount;
         }
     }
 
@@ -423,6 +447,11 @@ public class MapObjectives implements Iterable<MapObjective>, Eachable<MapObject
         public void validate(){
             if(block == null) block = Blocks.conveyor;
         }
+
+        @Override
+        public String toString(){
+            return "buildCount: " + block + " x"  + count;
+        }
     }
 
     /** Produce a certain amount of a unit. */
@@ -451,6 +480,11 @@ public class MapObjectives implements Iterable<MapObjective>, Eachable<MapObject
         public void validate(){
             if(unit == null) unit = UnitTypes.dagger;
         }
+
+        @Override
+        public String toString(){
+            return "unitCount: " + unit + " x"  + count;
+        }
     }
 
     /** Produce a certain amount of units. */
@@ -471,6 +505,11 @@ public class MapObjectives implements Iterable<MapObjective>, Eachable<MapObject
         @Override
         public String text(){
             return Core.bundle.format("objective.destroyunits", count - state.stats.enemyUnitsDestroyed);
+        }
+
+        @Override
+        public String toString(){
+            return "destroyUnits: " + count;
         }
     }
 
@@ -539,6 +578,11 @@ public class MapObjectives implements Iterable<MapObjective>, Eachable<MapObject
 
             return null;
         }
+
+        @Override
+        public String toString(){
+            return "timer: " + duration;
+        }
     }
 
     public static class DestroyBlockObjective extends MapObjective{
@@ -568,6 +612,11 @@ public class MapObjectives implements Iterable<MapObjective>, Eachable<MapObject
         @Override
         public void validate(){
             if(block == null) block = Blocks.router;
+        }
+
+        @Override
+        public String toString(){
+            return "destroyBlock: " + block  + ":" + team + " " + pos;
         }
     }
 
@@ -609,6 +658,11 @@ public class MapObjectives implements Iterable<MapObjective>, Eachable<MapObject
         public void validate(){
             if(block == null) block = Blocks.router;
         }
+
+        @Override
+        public String toString(){
+            return "destroyBlocks: " + block + ":" + team + " " + Arrays.toString(positions);
+        }
     }
 
     /** Command any unit to do anything. Always compete in headless mode. */
@@ -621,6 +675,11 @@ public class MapObjectives implements Iterable<MapObjective>, Eachable<MapObject
         @Override
         public String text(){
             return Core.bundle.get("objective.command");
+        }
+
+        @Override
+        public String toString(){
+            return "commandMode";
         }
     }
 
@@ -653,6 +712,11 @@ public class MapObjectives implements Iterable<MapObjective>, Eachable<MapObject
                 return text;
             }
         }
+
+        @Override
+        public String toString(){
+            return "flag: " + flag;
+        }
     }
 
     /** Destroy all enemy core(s). */
@@ -666,10 +730,15 @@ public class MapObjectives implements Iterable<MapObjective>, Eachable<MapObject
         public String text(){
             return Core.bundle.get("objective.destroycore");
         }
+
+        @Override
+        public String toString(){
+            return "destroyCore";
+        }
     }
 
     /** Marker used for drawing various content to indicate something along with an objective. Mostly used as UI overlay. */
-    public static abstract class ObjectiveMarker implements JsonSerializable{
+    public static abstract class ObjectiveMarker implements JsonSerializable, Serializable{
         /** Internal use only! Do not access. */
         public transient int arrayIndex;
 
@@ -1185,6 +1254,8 @@ public class MapObjectives implements Iterable<MapObjective>, Eachable<MapObject
             if(fetchedRegion == null) setTexture(texture.value);
             prepareTexture(this, texture.value);
 
+            float width = this.width, height = this.height;
+
             // Zero width/height scales marker to original texture's size
             if(Mathf.equal(width, 0f)) width = fetchedRegion.width * fetchedRegion.scl() * Draw.xscl;
             if(Mathf.equal(height, 0f)) height = fetchedRegion.height * fetchedRegion.scl() * Draw.yscl;
@@ -1427,6 +1498,11 @@ public class MapObjectives implements Iterable<MapObjective>, Eachable<MapObject
     @Target(FIELD)
     @Retention(RUNTIME)
     public @interface Multiline{}
+
+    /** For {@link String}; indicates that text corresponds to logic code. */
+    @Target(FIELD)
+    @Retention(RUNTIME)
+    public @interface LogicCode{}
 
     /** For {@code float}; multiplies the UI input by 60. */
     @Target(FIELD)
