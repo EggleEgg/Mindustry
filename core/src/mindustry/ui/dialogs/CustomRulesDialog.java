@@ -180,7 +180,9 @@ public class CustomRulesDialog extends BaseDialog{
                 () -> loadoutDialog.show(999999, rules.loadout,
                     i -> true,
                     () -> rules.loadout.clear().add(new ItemStack(Items.copper, 100)),
-                    () -> {}, () -> {}
+                    () -> {}, () -> {},
+                    () -> rules.maxLoadoutItemCap,
+                    v  -> rules.maxLoadoutItemCap = v
             )).left().width(300f).row();
         }
 
@@ -439,7 +441,7 @@ public class CustomRulesDialog extends BaseDialog{
         current.row();
     }
 
-    public void ruleInfo(Cell<?> cell, String text){
+    public static void ruleInfo(Cell<?> cell, String text){
         if(Core.bundle.has(text.substring(1) + ".info")){
             if(mobile && !graphics.isPortrait()){ //disabled in portrait - broken and goes offscreen
                 Table table = new Table();

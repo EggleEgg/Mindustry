@@ -175,6 +175,8 @@ public class Rules{
     public Seq<SpawnGroup> spawns = new Seq<>();
     /** Starting items put in cores. */
     public Seq<ItemStack> loadout = ItemStack.list(Items.copper, 100);
+    /** A set cap on the maxinum number of items (of any item type) a loadout can bring. Does not affect core storage capacity. Use a value <= 0 to disable. */
+    public int maxLoadoutItemCap = 0;
     /** Weather events that occur here. */
     public Seq<WeatherEntry> weather = new Seq<>(1);
     /** Blocks that cannot be placed. */

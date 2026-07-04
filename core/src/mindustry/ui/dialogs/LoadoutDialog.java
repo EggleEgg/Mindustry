@@ -3,6 +3,7 @@ package mindustry.ui.dialogs;
 import arc.*;
 import arc.func.*;
 import arc.input.*;
+import arc.math.*;
 import arc.scene.ui.layout.*;
 import arc.struct.*;
 import arc.util.*;
@@ -23,6 +24,8 @@ public class LoadoutDialog extends BaseDialog{
     private Table items;
     private int capacity;
     private @Nullable ItemSeq total;
+    private @Nullable Intp capProv;
+    private @Nullable Intc capCons;
 
     public LoadoutDialog(){
         super("@configure");
@@ -64,10 +67,18 @@ public class LoadoutDialog extends BaseDialog{
     }
 
     public void show(int capacity, Seq<ItemStack> stacks, Boolf<Item> validator, Runnable reseter, Runnable updater, Runnable hider){
-        show(capacity, null, stacks, validator, reseter, updater, hider);
+        show(capacity, null, stacks, validator, reseter, updater, hider, null, null);
+    }
+
+    public void show(int capacity, Seq<ItemStack> stacks, Boolf<Item> validator, Runnable reseter, Runnable updater, Runnable hider, @Nullable Intp capProv, @Nullable Intc capCons){
+        show(capacity, null, stacks, validator, reseter, updater, hider, capProv, capCons);
     }
 
     public void show(int capacity, ItemSeq total, Seq<ItemStack> stacks, Boolf<Item> validator, Runnable reseter, Runnable updater, Runnable hider){
+        show(capacity, total, stacks, validator, reseter, updater, hider, null, null);
+    }
+
+    public void show(int capacity, ItemSeq total, Seq<ItemStack> stacks, Boolf<Item> validator, Runnable reseter, Runnable updater, Runnable hider, @Nullable Intp capProv, @Nullable Intc capCons){
         this.originalStacks = stacks;
         this.validator = validator;
         this.resetter = reseter;
@@ -75,6 +86,8 @@ public class LoadoutDialog extends BaseDialog{
         this.capacity = capacity;
         this.total = total;
         this.hider = hider;
+        this.capProv = capProv;
+        this.capCons = capCons;
         reseed();
         show();
     }
@@ -119,6 +132,25 @@ public class LoadoutDialog extends BaseDialog{
             if(++i % 2 == 0 || (mobile && Core.graphics.isPortrait())){
                 items.row();
             }
+        }
+        
+        items.row();
+
+        if(capProv != null && capCons != null){
+            String key = "@rules.maxloadoutitemcap";
+
+            //makes sure .info bundle works
+            CustomRulesDialog.ruleInfo(items.table(Tex.pane, t -> {
+                t.margin(8).marginRight(8).left();
+                t.add(key).left().padRight(8);
+                t.field(capProv.get() + "", str -> {
+                    if(Strings.canParsePositiveInt(str)){
+                        capCons.get(Mathf.clamp(Strings.parseInt(str), 0, Integer.MAX_VALUE));
+                    }
+                }).valid(Strings::canParsePositiveInt).width(120f).left();
+            }).pad(2).padTop(30).marginLeft(25).marginRight(25).center().colspan(2), key);
+ 
+            items.row();
         }
     }
 

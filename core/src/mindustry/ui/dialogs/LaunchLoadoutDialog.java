@@ -57,7 +57,12 @@ public class LaunchLoadoutDialog extends BaseDialog{
 
         //updates sum requirements
         Runnable update = () -> {
-            int cap = lastCapacity = (int)(sector.planet.launchCapacityMultiplier * selected.findCore().itemCapacity);
+            int maxLoadCap = Integer.MAX_VALUE;
+            if(destination.preset != null && destination.preset.generator.map.rules().maxLoadoutItemCap > 0){
+                maxLoadCap = destination.preset.generator.map.rules().maxLoadoutItemCap;
+            }
+
+            int cap = lastCapacity = Math.min((int)(sector.planet.launchCapacityMultiplier * selected.findCore().itemCapacity), maxLoadCap);
 
             //cap resources based on core type
             ItemSeq schems = selected.requirements();
