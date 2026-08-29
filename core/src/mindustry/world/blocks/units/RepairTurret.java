@@ -37,6 +37,8 @@ public class RepairTurret extends Block{
     public float pulseRadius = 6f;
     public float pulseStroke = 2f;
     public boolean acceptCoolant = false;
+    /** Set to <= 0 to disable recent damage penalty */
+    public float recentDamageMultiplier = 0f;//0.1f;
 
     public float coolantUse = 0.5f;
     /** Effect displayed when coolant is used. */
@@ -154,6 +156,7 @@ public class RepairTurret extends Block{
         public Unit target;
         public Vec2 offset = new Vec2(), lastEnd = new Vec2();
         public float strength, rotation = 90;
+        public float recentMult;
 
         @Override
         public float buildRotation(){
@@ -204,7 +207,8 @@ public class RepairTurret extends Block{
                 float angle = Angles.angle(x, y, target.x + offset.x, target.y + offset.y);
                 if(Angles.angleDist(angle, rotation) < 30f){
                     healed = true;
-                    target.heal(repairSpeed * strength * edelta() * multiplier);
+                    recentMult = target.wasRecentlyDamaged(60f) && recentDamageMultiplier > 0 ? recentDamageMultiplier : Mathf.approachDelta(recentDamageMultiplier, 1f, 1f );
+                    target.heal(recentMult * repairSpeed * strength * edelta() * multiplier);
                 }
                 rotation = Mathf.slerpDelta(rotation, angle, 0.5f * efficiency * timeScale);
             }

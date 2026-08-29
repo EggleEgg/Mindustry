@@ -11,6 +11,8 @@ import mindustry.type.*;
 
 @Component
 abstract class ShieldComp implements Healthc, Posc{
+    static final float recentDamageTime = 60f * 5f;
+
     @Import float health, hitTime, x, y, healthMultiplier, armorOverride;
     @Import boolean dead;
     @Import Team team;
@@ -18,6 +20,7 @@ abstract class ShieldComp implements Healthc, Posc{
 
     /** Absorbs health damage. */
     float shield;
+    private transient float lastDamageTime = -recentDamageTime;
     /** Subtracts an amount from damage. No need to save. */
     transient float armor;
     /** Shield opacity. */
@@ -54,8 +57,17 @@ abstract class ShieldComp implements Healthc, Posc{
         }
     }
 
+    public boolean wasRecentlyDamaged(){
+        return lastDamageTime + recentDamageTime >= Time.time;
+    }
+
+    public boolean wasRecentlyDamaged(float duration){
+        return lastDamageTime + duration >= Time.time;
+    }
+
     protected void rawDamage(float amount){
         boolean hadShields = shield > 0.0001f;
+        lastDamageTime = Time.time;
 
         if(Float.isNaN(health)) health = 0f;
 
