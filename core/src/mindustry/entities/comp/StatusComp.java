@@ -21,7 +21,7 @@ abstract class StatusComp implements Posc{
 
     //these are considered read-only
     //note: armor is a special case; it is an override when >= 0, otherwise ignored
-    transient float speedMultiplier = 1, damageMultiplier = 1, healthMultiplier = 1, reloadMultiplier = 1, buildSpeedMultiplier = 1, dragMultiplier = 1, armorOverride = -1f;
+    transient float speedMultiplier = 1, damageMultiplier = 1, healthMultiplier = 1, reloadMultiplier = 1, buildSpeedMultiplier = 1, dragMultiplier = 1, armorOverride = -1f, wreckMultiplier = 1, bombingMultiplier = 1;
     transient boolean disarmed = false;
 
     @Import UnitType type;
@@ -149,6 +149,14 @@ abstract class StatusComp implements Posc{
     public void statusReloadMultiplier(float reloadMultiplier){
         applyDynamicStatus().reloadMultiplier = reloadMultiplier;
     }
+    /** Uses a dynamic status effect to change wreck damage */
+    public void statusWreckMultiplier(float wreckMultiplier){
+        applyDynamicStatus().wreckMultiplier = wreckMultiplier;
+    }
+    /** Uses a dynamic status effect to change bombing damage */
+    public void statusBombingMultiplier(float bombingMultiplier){
+        applyDynamicStatus().bombingMultiplier = bombingMultiplier;
+    }
 
     /** Uses a dynamic status effect to override max health. */
     public void statusMaxHealth(float health){
@@ -185,7 +193,7 @@ abstract class StatusComp implements Posc{
 
         applied.clear();
         armorOverride = -1f;
-        speedMultiplier = damageMultiplier = healthMultiplier = reloadMultiplier = buildSpeedMultiplier = dragMultiplier = 1f;
+        speedMultiplier = damageMultiplier = healthMultiplier = reloadMultiplier = buildSpeedMultiplier = dragMultiplier = wreckMultiplier = bombingMultiplier = 1f;
         disarmed = false;
 
         if(statuses.isEmpty()) return;
@@ -216,6 +224,9 @@ abstract class StatusComp implements Posc{
                     reloadMultiplier *= entry.reloadMultiplier;
                     buildSpeedMultiplier *= entry.buildSpeedMultiplier;
                     dragMultiplier *= entry.dragMultiplier;
+                    wreckMultiplier *= entry.wreckMultiplier;
+                    bombingMultiplier *= entry.bombingMultiplier;
+
                     //armor is a special case; many units have it set it to 0, so an override at values >= 0 is used
                     if(entry.armorOverride >= 0f) armorOverride = entry.armorOverride;
                 }else{
@@ -225,6 +236,8 @@ abstract class StatusComp implements Posc{
                     reloadMultiplier *= entry.effect.reloadMultiplier;
                     buildSpeedMultiplier *= entry.effect.buildSpeedMultiplier;
                     dragMultiplier *= entry.effect.dragMultiplier;
+                    wreckMultiplier *= entry.effect.wreckMultiplier;
+                    bombingMultiplier *= entry.effect.bombingMultiplier;
                 }
 
                 disarmed |= entry.effect.disarm;

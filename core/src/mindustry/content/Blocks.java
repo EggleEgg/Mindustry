@@ -3656,13 +3656,15 @@ public class Blocks{
             hasPower = true;
             size = 2;
             force = 16f;
-            scaledForce = 9f;
+            scaledForce = 20f;
             range = 300f;
-            damage = 0.5f;
+            damage = 0.3f;
             scaledHealth = 160;
             rotateSpeed = 12;
-
+            mainStatus = StatusEffects.disarmed;
+            debuffStatus = StatusEffects.signalDisruption;
             consumePower(3.3f);
+            coolant = consumeCoolant(0.1f);
         }};
 
         swarmer = new ItemTurret("swarmer"){{

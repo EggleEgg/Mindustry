@@ -1613,6 +1613,22 @@ public class Fx{
         Fill.square(e.x, e.y, e.fslope() * 2f, 45f);
     }),
 
+    signalDisruption = new Effect(45f, e -> {
+        int amount = e.data instanceof Unit unit ? Mathf.round(unit.hitSize() / 6f) : 3;
+        color(Pal.techBlue, Color.white, e.fin() * 0.6f);
+
+        randLenVectors(e.id, amount, 1f + e.fin() * 6f, (x, y) -> {
+            Fill.square(e.x + x, e.y + y, 0.8f + e.fout() * 1.6f, 45f);
+        });
+
+        randLenVectors(e.id + 1, Mathf.round(amount * (2f/3f)), 1f + e.fin() * 4f, (x, y) -> {
+            Fill.square(e.x + x, e.y + y, e.fslope() * 0.9f);
+        });
+
+        Lines.stroke(0.6f * e.fout());
+        Lines.circle(e.x, e.y, 2f + e.fin() * 4f);
+    }),
+
     dropItem = new Effect(20f, e -> {
         float length = 20f * e.finpow();
         float size = 7f * e.fout();

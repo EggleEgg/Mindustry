@@ -27,6 +27,10 @@ public class StatusEffect extends UnlockableContent{
     public float buildSpeedMultiplier = 1f;
     /** Unit drag multiplier. */
     public float dragMultiplier = 1f;
+    /** Flying unit wreck damage multiplier. */
+    public float wreckMultiplier = 1f;
+    /** Flying unit bombing damage multiplier. */
+    public float bombingMultiplier = 1f;
     /** Damage dealt upon transition to an affinity. */
     public float transitionDamage = 0f;
     /** Unit weapon(s) disabled. */
@@ -101,6 +105,8 @@ public class StatusEffect extends UnlockableContent{
         if(speedMultiplier != 1) stats.addMultModifier(Stat.speedMultiplier, speedMultiplier);
         if(reloadMultiplier != 1) stats.addMultModifier(Stat.reloadMultiplier, reloadMultiplier);
         if(buildSpeedMultiplier != 1) stats.addMultModifier(Stat.buildSpeedMultiplier, buildSpeedMultiplier);
+        if(wreckMultiplier != 1) stats.addMultModifier(Stat.wreckMultiplier, wreckMultiplier);
+        if(bombingMultiplier != 1) stats.addMultModifier(Stat.bombingMultiplier, bombingMultiplier);
         if(damage > 0) stats.add(Stat.damage, damage * 60f, StatUnit.perSecond);
         if(damage < 0) stats.add(Stat.healing, -damage * 60f, StatUnit.perSecond);
 

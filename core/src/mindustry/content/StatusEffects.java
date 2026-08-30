@@ -11,7 +11,7 @@ import mindustry.type.*;
 import static mindustry.Vars.*;
 
 public class StatusEffects{
-    public static StatusEffect none, burning, freezing, unmoving, slow, fast, wet, muddy, melting, sapped, tarred, overdrive, overclock, shielded, shocked, blasted, corroded, boss, sporeSlowed, disarmed, electrified, invincible, dynamic;
+    public static StatusEffect none, burning, freezing, unmoving, slow, fast, wet, muddy, melting, sapped, tarred, overdrive, overclock, shielded, shocked, blasted, corroded, boss, sporeSlowed, disarmed, electrified, invincible, dynamic, signalDisruption;
 
     public static void load(){
 
@@ -212,6 +212,15 @@ public class StatusEffects{
             show = false;
             dynamic = true;
             permanent = true;
+        }};
+
+        signalDisruption = new StatusEffect("signal-disruption"){{
+            color = Pal.lightishGray;
+            speedMultiplier = 0.9f;
+            wreckMultiplier = 0.2f;
+            bombingMultiplier = 0.2f;
+            parentizeEffect = true;
+            effect = Fx.signalDisruption;
         }};
     }
 }
