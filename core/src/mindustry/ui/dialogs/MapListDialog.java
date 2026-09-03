@@ -2,38 +2,75 @@ package mindustry.ui.dialogs;
 
 import arc.*;
 import arc.graphics.*;
+import arc.graphics.g2d.*;
+import arc.input.*;
+import arc.scene.*;
+import arc.scene.event.*;
 import arc.scene.style.*;
 import arc.scene.ui.*;
 import arc.scene.ui.layout.*;
 import arc.struct.*;
 import arc.util.*;
 import mindustry.*;
+import mindustry.content.*;
 import mindustry.game.*;
 import mindustry.gen.*;
 import mindustry.graphics.*;
-import mindustry.maps.*;
+import mindustry.maps.Map;
+import mindustry.type.*;
 import mindustry.ui.*;
+
+import java.util.*;
 
 import static mindustry.Vars.*;
 
 public abstract class MapListDialog extends BaseDialog{
+    //shared across map dialogs
+    private static MapViewSettings settings = Core.settings.getJson("editormapviewsettings", MapViewSettings.class, MapViewSettings::new);
+
     BaseDialog activeDialog;
 
     private String searchString;
     private Seq<Gamemode> modes = new Seq<>();
+    private Seq<String> availablePlanets = new Seq<>();
     private Table mapTable = new Table();
     private TextField searchField;
+    private ObjectMap<Map, Rules> rulesCache = new ObjectMap<>();
 
-    private boolean
-    showBuiltIn = Core.settings.getBool("editorshowbuiltinmaps", true),
-    showCustom = Core.settings.getBool("editorshowcustommaps", true),
-    showModded = Core.settings.getBool("editorshowmoddedmaps", true),
-    searchAuthor = Core.settings.getBool("editorsearchauthor", false),
-    searchDescription = Core.settings.getBool("editorsearchdescription", false),
-    searchModname = Core.settings.getBool("editorsearchmodname", false),
-    prioritizeModded = Core.settings.getBool("editorprioritizemodded", false),
-    prioritizeCustom = Core.settings.getBool("editorprioritizecustom", false),
-    displayType;
+    private boolean displayType;
+
+    private enum MapPriority{
+        name(Structs.comparing(Map::name)),
+        custom(Structs.comps(Structs.comparingBool(m -> !m.custom), Structs.comparingLong(m -> -m.file.lastModified()))),
+        builtin(Structs.comps(Structs.comparingBool(m -> m.custom), Structs.comparingLong(m -> -m.file.lastModified()))),
+        recent(Structs.comps(Structs.comparingLong(m -> -m.file.lastModified()), Structs.comparing(Map::name)));
+
+        final Comparator<Map> comparator;
+
+        public static final MapPriority[] all = values();
+
+        MapPriority(Comparator<Map> comparator){
+            this.comparator = comparator;
+        }
+    }
+
+    private static class MapViewSettings{
+        boolean
+        showBuiltIn = true,
+        showCustom = true,
+        showModded = true,
+        searchAuthor = false,
+        searchDescription = false,
+        searchModname = false;
+
+        MapPriority priority = MapPriority.recent;
+
+        Seq<String> planets = new Seq<>();
+
+        void save(){
+            Core.settings.putJson("editormapviewsettings", MapViewSettings.class, this);
+        }
+    }
 
     public MapListDialog(String title, boolean displayType){
         super(title);
@@ -44,6 +81,7 @@ public abstract class MapListDialog extends BaseDialog{
 
         addCloseListener();
 
+        hidden(() -> rulesCache.clear());
         shown(this::setup);
         onResize(() -> {
             if(activeDialog != null){
@@ -58,6 +96,9 @@ public abstract class MapListDialog extends BaseDialog{
     abstract void showMap(Map map);
 
     void setup(){
+        availablePlanets = content.planets().select(p -> p.accessible).map(p -> p.name);
+        availablePlanets.add(Planets.sun.name);
+
         makeButtonOverlay();
 
         buttons.clearChildren();
@@ -107,37 +148,35 @@ public abstract class MapListDialog extends BaseDialog{
         int i = 0;
 
         Seq<Map> mapList = new Seq<>();
+        Seq<String> activePlanetFilters = settings.planets.select(p -> availablePlanets.contains(p));
 
-        if(showCustom) mapList.addAll(maps.customMaps());
-        if(showBuiltIn) mapList.addAll(maps.defaultMaps());
-        if(showModded) mapList.addAll(maps.moddedMaps());
+        if(settings.showCustom) mapList.addAll(maps.customMaps());
+        if(settings.showBuiltIn) mapList.addAll(maps.defaultMaps());
+        if(settings.showModded) mapList.addAll(maps.moddedMaps());
 
         mapList.distinct();
+        mapList.sort(settings.priority.comparator);
 
-        if(prioritizeModded){
-            Seq<Map> ordered = new Seq<>();
-            ordered.addAll(mapList.select(m -> m.mod != null).sortComparing(m -> m.mod.meta.displayName));
-            ordered.addAll(mapList.select(m -> m.mod == null).sortComparing(m -> m.plainName()));
-            mapList = ordered;
-        }else if(prioritizeCustom){
-            Seq<Map> ordered = new Seq<>();
-            ordered.addAll(mapList.select(m -> m.custom)).sortComparing(m -> m.plainName());
-            ordered.addAll(mapList.select(m -> !m.custom).sortComparing(m -> m.plainName()));
-            mapList = ordered;
-        }else{
-            mapList.sortComparing(m -> m.plainName());
-        }
         for(Map map : mapList){
 
             boolean invalid = false;
             for(Gamemode mode : modes){
                 invalid |= !mode.valid(map);
             }
+
+            // Only filter through active planets.
+            if(!activePlanetFilters.isEmpty()){
+                Rules rules = rulesCache.get(map, map::rules);
+                if(!activePlanetFilters.contains(rules.planet.name)){
+                    continue;
+                }
+            }
+
             if(invalid || (searchString != null
-                && !map.plainName().toLowerCase().contains(searchString)
-                && (!searchAuthor || !map.plainAuthor().toLowerCase().contains(searchString))
-                && (!searchDescription || !map.plainDescription().toLowerCase().contains(searchString))
-                && (!searchModname || !(map.mod == null ? "" : Strings.stripColors(map.mod.meta.displayName).toLowerCase()).contains(searchString)))){
+            && !map.plainName().toLowerCase().contains(searchString)
+            && (!settings.searchAuthor || !map.plainAuthor().toLowerCase().contains(searchString))
+            && (!settings.searchDescription || !map.plainDescription().toLowerCase().contains(searchString))
+            && (!settings.searchModname || !(map.mod == null ? "" : Strings.stripColors(map.mod.meta.displayName).toLowerCase()).contains(searchString)))){
                 continue;
             }
 
@@ -188,6 +227,7 @@ public abstract class MapListDialog extends BaseDialog{
     void showMapFilters(){
         activeDialog = new BaseDialog("@editor.filters");
         activeDialog.addCloseButton();
+        activeDialog.hidden(settings::save);
         activeDialog.cont.table(menu -> {
             menu.table(tab -> {
                 // Gamemodes
@@ -195,7 +235,7 @@ public abstract class MapListDialog extends BaseDialog{
                     t.add("@editor.filters.mode").padBottom(6f).row();
                     t.table(Tex.button, left -> {
                         for(Gamemode mode : Gamemode.all){
-                            TextureRegionDrawable icon = Vars.ui.getIcon("mode" + Strings.capitalize(mode.name()));
+                            TextureRegionDrawable icon = ui.getIcon("mode" + Strings.capitalize(mode.name()));
                             if(Core.atlas.isFound(icon.getRegion())){
                                 left.button(icon, Styles.emptyTogglei, () -> {
                                     if(modes.contains(mode)){
@@ -208,30 +248,77 @@ public abstract class MapListDialog extends BaseDialog{
                             }
                         }
                     });
-                }).pad(5f);
-                tab.add().width(60f);
+                }).expandX().pad(5f);
                 // Priorities
                 tab.table(t -> {
                     t.add("@editor.filters.priorities").padBottom(6f).row();
-                    t.table(Tex.button, right ->{
-                        right.button(ui.getIcon("players"), Styles.emptyTogglei, () -> {
-                            prioritizeCustom = !prioritizeCustom;
-                            if(prioritizeModded){
-                                prioritizeModded = false;
-                                Core.settings.put("editorprioritizemodded", false);
+                    t.table(Tex.button, right -> {
+                        TextureRegionDrawable[] icons = {Icon.fileText, Icon.players, Icon.hammer, Icon.play};
+
+                        for(int i = 0; i < MapPriority.all.length; i++){
+                            var prio = MapPriority.all[i];
+                            right.button(icons[i], Styles.emptyTogglei, () -> {
+                                settings.priority = prio;
+                                rebuildMaps();
+                            }).size(60f).checked(b -> settings.priority == prio).tooltip("@editor.filters.prioritize." + prio.name(), true);
+                        }
+                    });
+                }).expandX().pad(5f);
+                // Planet selection dialog similar to the tech tree selection menu
+                tab.table(t -> {
+                    t.add("").padBottom(6f).row();
+                    t.table(Tex.button, but -> {
+                        ImageButton pButton = but.button(Icon.planet, Styles.emptyTogglei, () -> {
+                            new BaseDialog("@editor.filters.planetselect"){{ cont.pane(t -> {
+                                t.table(Tex.button, in -> {
+                                    in.defaults().width(300f).height(60f);
+
+                                    in.button("@rules.anyenv", Icon.planet, Styles.flatTogglet, iconMed, () -> {
+                                        if(settings.planets.contains(Planets.sun.name)){
+                                            settings.planets.remove(Planets.sun.name);
+                                        }else{
+                                            settings.planets.add(Planets.sun.name);
+                                        }
+                                        rebuildMaps();
+                                    }).marginLeft(12f).checked(settings.planets.contains(Planets.sun.name)).row();
+
+                                    for(Planet planet : content.planets().select(p -> p.accessible)){
+                                        // Get the planet's custom icon. Defaults to the default colored planet icon
+                                        TextureRegion foundIcon = Core.atlas.find(planet.name + "-ui", planet.name);
+                                        TextureRegionDrawable picon = Core.atlas.isFound(foundIcon) ? new TextureRegionDrawable(foundIcon) : ((TextureRegionDrawable)Icon.planet.tint(planet.iconColor));
+
+                                        in.button(planet.localizedName, picon, Styles.flatTogglet, iconMed, () -> {
+                                            if(settings.planets.contains(planet.name)){
+                                                settings.planets.remove(planet.name);
+                                            }else{
+                                                settings.planets.add(planet.name);
+                                            }
+                                            rebuildMaps();
+                                        }).marginLeft(12f).checked(settings.planets.contains(planet.name)).row();
+                                    }
+                                });
+                            });
+                                addCloseButton();
+                            }}.show();
+                        }).size(60f).tooltip("@editor.filters.planetselect").checked(b -> settings.planets.find(p -> availablePlanets.contains(p)) != null)
+                        .get();
+                        pButton.addListener(new ClickListener(KeyCode.mouseRight){
+                            @Override
+                            public void clicked(InputEvent event, float x, float y) {
+                                if(mobile) return;
+                                settings.planets.removeAll(p -> availablePlanets.contains(p));
+                                rebuildMaps();
                             }
-                            Core.settings.put("editorprioritizecustom", prioritizeCustom);
-                            rebuildMaps();
-                        }).size(60f).checked(b -> showCustom && prioritizeCustom).tooltip("@editor.filters.prioritizecustom").disabled(b -> !showCustom);
-                        right.button(ui.getIcon("hammer"), Styles.emptyTogglei, () -> {
-                            prioritizeModded = !prioritizeModded;
-                            if(prioritizeCustom){
-                                prioritizeCustom = false;
-                                Core.settings.put("editorprioritizecustom", false);
+                        });
+                        pButton.addListener(new ElementGestureListener(){
+                            @Override
+                            public boolean longPress(Element e, float x, float y){
+                                if(!mobile) return false;
+                                settings.planets.removeAll(p -> availablePlanets.contains(p));
+                                rebuildMaps();
+                                return true;
                             }
-                            Core.settings.put("editorprioritizemodded", prioritizeModded);
-                            rebuildMaps();
-                        }).size(60f).checked(b-> showModded && prioritizeModded).tooltip("@editor.filters.prioritizemod").disabled(b -> !showModded);
+                        });
                     });
                 }).expandX().pad(5f);
             }).padBottom(10f);
@@ -240,47 +327,33 @@ public abstract class MapListDialog extends BaseDialog{
             menu.add("@editor.filters.type").width(120f).left().row();
             menu.table(Tex.button, t -> {
                 t.button("@custom", Styles.flatTogglet, () -> {
-                    showCustom = !showCustom;
-                    Core.settings.put("editorshowcustommaps", showCustom);
-                    if(!showCustom){
-                        prioritizeCustom = false;
-                        Core.settings.put("editorprioritizecustom", false);
-                    }
+                    settings.showCustom = !settings.showCustom;
                     rebuildMaps();
-                }).size(150f, 60f).checked(showCustom);
+                }).size(150f, 60f).checked(settings.showCustom);
                 t.button("@builtin", Styles.flatTogglet, () -> {
-                    showBuiltIn = !showBuiltIn;
-                    Core.settings.put("editorshowbuiltinmaps", showBuiltIn);
+                    settings.showBuiltIn = !settings.showBuiltIn;
                     rebuildMaps();
-                }).size(150f, 60f).checked(showBuiltIn);
+                }).size(150f, 60f).checked(settings.showBuiltIn);
                 t.button("@modded", Styles.flatTogglet, () -> {
-                    showModded = !showModded;
-                    Core.settings.put("editorshowmoddedmaps", showModded);
-                    if(!showModded){
-                        prioritizeModded = false;
-                        Core.settings.put("editorprioritizemodded", false);
-                    }
+                    settings.showModded = !settings.showModded;
                     rebuildMaps();
-                }).size(150f, 60f).checked(showModded);
+                }).size(150f, 60f).checked(settings.showModded);
             }).padBottom(10f);
             menu.row();
             menu.add("@editor.filters.search").width(120f).left().row();
             menu.table(Tex.button, t -> {
                 t.button("@editor.filters.author", Styles.flatTogglet, () -> {
-                    searchAuthor = !searchAuthor;
-                    Core.settings.put("editorsearchauthor", searchAuthor);
+                    settings.searchAuthor = !settings.searchAuthor;
                     rebuildMaps();
-                }).size(150f, 60f).checked(searchAuthor);
+                }).size(150f, 60f).checked(settings.searchAuthor);
                 t.button("@editor.filters.description", Styles.flatTogglet, () -> {
-                    searchDescription = !searchDescription;
-                    Core.settings.put("editorsearchdescription", searchDescription);
+                    settings.searchDescription = !settings.searchDescription;
                     rebuildMaps();
-                }).size(150f, 60f).checked(searchDescription);
+                }).size(150f, 60f).checked(settings.searchDescription);
                 t.button("@editor.filters.modname", Styles.flatTogglet, () -> {
-                    searchModname = !searchModname;
-                    Core.settings.put("editorsearchmodname", searchModname);
+                    settings.searchModname = !settings.searchModname;
                     rebuildMaps();
-                }).size(150f, 60f).checked(searchModname);
+                }).size(150f, 60f).checked(settings.searchModname);
             });
         });
 
