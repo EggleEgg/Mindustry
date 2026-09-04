@@ -15,7 +15,8 @@ public class UnitSorts{
     mostArmor = (u, x, y) -> -u.armor + Mathf.dst2(u.x, u.y, x, y) / 6400f,
     leastArmor = (u, x, y) -> u.armor + Mathf.dst2(u.x, u.y, x, y) / 6400f,
     mostShield = (u, x, y) -> -u.shield + Mathf.dst2(u.x, u.y, x, y) / 6400f,
-    leastShield = (u, x, y) -> u.shield + Mathf.dst2(u.x, u.y, x, y) / 6400f;
+    leastShield = (u, x, y) -> u.shield + Mathf.dst2(u.x, u.y, x, y) / 6400f,
+    leastHealth = (u, x, y) -> (u.health / u.maxHealth) * 1000f + Mathf.dst2(u.x, u.y, x, y) / 6400f;
 
     public static BuildingPriorityf
 

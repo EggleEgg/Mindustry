@@ -53,14 +53,14 @@ import static mindustry.Vars.*;
 @Component(base = true, genInterface = false)
 abstract class BuildingComp implements Posc, Teamc, Healthc, Buildingc, Timerc, QuadTreeObject, Displayable, Sized, Senseable, Controllable, Settable, AmbientSource{
     //region vars and initialization
-    static final float timeToSleep = 60f * 1, recentDamageTime = 60f * 5f;
+    static final float timeToSleep = 60f * 1;
     static final ObjectSet<Building> tmpTiles = new ObjectSet<>();
     static final Seq<Building> tempBuilds = new Seq<>();
     static final BuildTeamChangeEvent teamChangeEvent = new BuildTeamChangeEvent();
     static final BuildDamageEvent bulletDamageEvent = new BuildDamageEvent();
     static int sleepingEntities = 0;
 
-    @Import float x, y, health, maxHealth;
+    @Import float x, y, health, maxHealth, lastDamageTime;
     @Import Team team;
     @Import boolean dead;
 
@@ -93,10 +93,8 @@ abstract class BuildingComp implements Posc, Teamc, Healthc, Buildingc, Timerc, 
     transient boolean shouldConsumePower;
 
     transient float healSuppressionTime = -1f;
-    transient float lastHealTime = -120f * 10f;
     transient Color suppressColor = Pal.sapBullet;
 
-    private transient float lastDamageTime = -recentDamageTime;
     private transient float timeScale = 1f, timeScaleDuration;
     private transient float dumpAccum;
 
@@ -492,18 +490,6 @@ abstract class BuildingComp implements Posc, Teamc, Healthc, Buildingc, Timerc, 
 
     public boolean isHealSuppressed(){
         return block.suppressable && Time.time <= healSuppressionTime;
-    }
-
-    public void recentlyHealed(){
-        lastHealTime = Time.time;
-    }
-
-    public boolean wasRecentlyHealed(float duration){
-        return lastHealTime + duration >= Time.time;
-    }
-
-    public boolean wasRecentlyDamaged(){
-        return lastDamageTime + recentDamageTime >= Time.time;
     }
 
     public void eachEdge(Cons<Tile> cons){
@@ -2047,12 +2033,14 @@ abstract class BuildingComp implements Posc, Teamc, Healthc, Buildingc, Timerc, 
     @Override
     public void heal(){
         healthChanged();
+        recentlyHealed();
     }
 
     @MethodPriority(100)
     @Override
     public void heal(float amount){
         healthChanged();
+        recentlyHealed();
     }
 
     @Override

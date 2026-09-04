@@ -11,7 +11,7 @@ import mindustry.type.*;
 
 @Component
 abstract class ShieldComp implements Healthc, Posc{
-    @Import float health, hitTime, x, y, healthMultiplier, armorOverride;
+    @Import float health, hitTime, x, y, healthMultiplier, armorOverride, lastDamageTime;
     @Import boolean dead;
     @Import Team team;
     @Import UnitType type;
@@ -56,6 +56,7 @@ abstract class ShieldComp implements Healthc, Posc{
 
     protected void rawDamage(float amount){
         boolean hadShields = shield > 0.0001f;
+        lastDamageTime = Time.time;
 
         if(Float.isNaN(health)) health = 0f;
 

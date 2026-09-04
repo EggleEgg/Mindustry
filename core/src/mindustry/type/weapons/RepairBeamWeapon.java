@@ -11,6 +11,7 @@ import mindustry.*;
 import mindustry.content.*;
 import mindustry.core.*;
 import mindustry.entities.*;
+import mindustry.entities.Units.*;
 import mindustry.entities.units.*;
 import mindustry.gen.*;
 import mindustry.graphics.*;
@@ -33,7 +34,13 @@ public class RepairBeamWeapon extends Weapon{
     public float pulseRadius = 6f;
     public float pulseStroke = 2f;
     public float widthSinMag = 0f, widthSinScl = 4f;
-    public float recentDamageMultiplier = 0.1f;
+    /** A multiplier on repair when recently damaged. Set to <= 0 to disable. */
+    public float recentDmgMultBuild = 0.1f, recentDmgMultUnit = -1f;
+    /** How much time after being damaged counts as "recently damaged". */
+    public float recentDmgTimeBuild = -1f, recentDmgTimeUnit = -1f;
+
+    /** Function for choosing which unit to target. */
+    public Sortf unitSort = UnitSorts.closest;
 
     public TextureRegion laser, laserEnd, laserTop, laserTopEnd;
 
@@ -86,7 +93,7 @@ public class RepairBeamWeapon extends Weapon{
 
     @Override
     protected Teamc findTarget(Unit unit, float x, float y, float range, boolean air, boolean ground){
-        var out = targetUnits ? Units.closest(unit.team, x, y, range, u -> u != unit && u.damaged()) :  null;
+        var out = targetUnits ? Units.closest(unit.team, x, y, range, u -> u != unit && u.damaged(), unitSort) : null;
         if(out != null || !targetBuildings) return out;
         return Units.findAllyTile(unit.team, x, y, range, Building::damaged);
     }
@@ -153,7 +160,11 @@ public class RepairBeamWeapon extends Weapon{
 
         if(canShoot && mount.target instanceof Healthc u){
             float baseAmount = repairSpeed * heal.strength * Time.delta + fractionRepairSpeed * heal.strength * Time.delta * u.maxHealth() / 100f;
-            u.heal((u instanceof Building b && b.wasRecentlyDamaged() ? recentDamageMultiplier : 1f) * baseAmount);
+
+            float mult = 1f;
+            if(recentDmgMultBuild > 0f && u instanceof Building b && b.wasRecentlyDamaged(recentDmgTimeBuild)) mult = recentDmgMultBuild;
+            else if(recentDmgMultUnit > 0f && u instanceof Unit b && b.wasRecentlyDamaged(recentDmgTimeUnit)) mult = recentDmgMultUnit;
+            u.heal(mult * baseAmount);
         }
     }
 

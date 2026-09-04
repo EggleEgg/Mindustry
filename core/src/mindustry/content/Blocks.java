@@ -6414,13 +6414,14 @@ public class Blocks{
             requirements(Category.units, with(Items.silicon, 90, Items.thorium, 80, Items.plastanium, 60));
             size = 2;
             length = 6f;
-            repairSpeed = 3f;
+            repairSpeed = 2.5f;
+            recentDmgMultiplier = 0.5f;
             repairRadius = 145f;
             powerUse = 5f;
             beamWidth = 1.1f;
             pulseRadius = 6.1f;
             coolantUse = 0.16f;
-            coolantMultiplier = 1.6f;
+            coolantMultiplier = 1.75f;
             acceptCoolant = true;
             ambientSoundVolume = 1.25f;
         }};

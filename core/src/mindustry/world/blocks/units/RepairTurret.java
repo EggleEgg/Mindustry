@@ -37,6 +37,12 @@ public class RepairTurret extends Block{
     public float pulseRadius = 6f;
     public float pulseStroke = 2f;
     public boolean acceptCoolant = false;
+    /** A multiplier on repair when recently damaged. Set to <= 0 to disable. */
+    public float recentDmgMultiplier = -1f;
+    /** How much time after being damaged counts as "recently damaged". */
+    public float recentDmgTime = 60f * 20f;
+    /** Whether to linearly scale the recent damage multiplier back to 1 over time. */
+    public boolean scaleRecentDmg = true;
 
     public float coolantUse = 0.5f;
     /** Effect displayed when coolant is used. */
@@ -72,6 +78,13 @@ public class RepairTurret extends Block{
         super.setStats();
         stats.add(Stat.range, repairRadius / tilesize, StatUnit.blocks);
         stats.add(Stat.repairSpeed, repairSpeed * 60f, StatUnit.perSecond);
+
+        if(recentDmgMultiplier > 0f){
+            stats.add(Stat.recentDamageMultiplier, t -> {
+                t.add(Strings.autoFixed(recentDmgMultiplier, 2) + StatUnit.multiplier.localized() + "[lightgray] ~ "
+                    + Core.bundle.format(scaleRecentDmg ? "bar.durationafterhitfaded" : "bar.durationafterhit", recentDmgTime / 60f));
+            });
+        }
 
         if(acceptCoolant){
             stats.remove(Stat.booster);
@@ -154,6 +167,7 @@ public class RepairTurret extends Block{
         public Unit target;
         public Vec2 offset = new Vec2(), lastEnd = new Vec2();
         public float strength, rotation = 90;
+        public float recentMult = 1f;
 
         @Override
         public float buildRotation(){
@@ -203,8 +217,17 @@ public class RepairTurret extends Block{
             if(target != null && efficiency > 0){
                 float angle = Angles.angle(x, y, target.x + offset.x, target.y + offset.y);
                 if(Angles.angleDist(angle, rotation) < 30f){
+                    if(recentDmgMultiplier > 0f && target.wasRecentlyDamaged(recentDmgTime)){
+                        if(scaleRecentDmg){
+                            float progress = Mathf.clamp((Time.time - target.lastDamageTime) / recentDmgTime);
+                            recentMult = Mathf.approachDelta(recentDmgMultiplier, 1f, progress);
+                        }else{
+                            recentMult = recentDmgMultiplier;
+                        }
+                    }
+
                     healed = true;
-                    target.heal(repairSpeed * strength * edelta() * multiplier);
+                    target.heal(repairSpeed * strength * edelta() * multiplier * recentMult);
                 }
                 rotation = Mathf.slerpDelta(rotation, angle, 0.5f * efficiency * timeScale);
             }
