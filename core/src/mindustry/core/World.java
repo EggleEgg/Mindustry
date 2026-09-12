@@ -333,6 +333,11 @@ public class World{
         }
     }
 
+    /** @return whether the coordinates are inside the map's defined limit rect. */
+    public boolean isInMapArea(int x, int y){
+        return tiles.in(x, y) && (!state.rules.limitMapArea || Rect.contains(state.rules.limitX, state.rules.limitY, state.rules.limitWidth, state.rules.limitHeight, x, y));
+    }
+
     public Context filterContext(Map map){
         return new FilterContext(map);
     }
@@ -551,6 +556,30 @@ public class World{
             if(e2 < dx){
                 err += dx;
                 y += sy;
+            }
+        }
+    }
+
+    public static void raycastEachNoDiagonalWorld(float x0, float y0, float x1, float y1, Raycaster cons){
+        raycastEachNoDiagonal(toTile(x0), toTile(y0), toTile(x1), toTile(y1), cons);
+    }
+
+    public static void raycastEachNoDiagonal(int startX, int startY, int endX, int endY, Raycaster cons){
+        int xDist = Math.abs(endX - startX);
+        int yDist = -Math.abs(endY - startY);
+        int xStep = (startX < endX ? +1 : -1);
+        int yStep = (startY < endY ? +1 : -1);
+        int error = xDist + yDist;
+
+        while(true){
+            if(cons.accept(startX, startY) || (startX == endX && startY == endY)) break;
+
+            if(2 * error - yDist > xDist - 2 * error){
+                error += yDist;
+                startX += xStep;
+            }else{
+                error += xDist;
+                startY += yStep;
             }
         }
     }
