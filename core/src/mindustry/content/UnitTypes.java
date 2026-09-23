@@ -2961,7 +2961,6 @@ public class UnitTypes{
                         trailLength = 5;
                         hitEffect = Fx.blastExplosion;
                         despawnEffect = Fx.hitBulletColor;
-
                     }};
                 }});
             }
