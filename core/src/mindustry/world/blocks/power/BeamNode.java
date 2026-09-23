@@ -70,12 +70,15 @@ public class BeamNode extends PowerBlock{
 
     @Override
     public void drawPlace(int x, int y, int rotation, boolean valid){
-        for(int i = 0; i < 4; i++){
-            int maxLen = range + size/2;
+        int dirs = allowDiagonal ? 8 : 4;
+        var points = allowDiagonal ? Geometry.d8 : Geometry.d4;
+
+        for(int i = 0; i < dirs; i++){
+            int maxLen = range + size / 2;
             Building dest = null;
-            var dir = Geometry.d4[i];
+            var dir = points[i];
             int dx = dir.x, dy = dir.y;
-            int offset = size/2;
+            int offset = size / 2;
             for(int j = 1 + offset; j <= range + offset; j++){
                 var other = world.build(x + j * dir.x, y + j * dir.y);
 
@@ -92,21 +95,21 @@ public class BeamNode extends PowerBlock{
             }
 
             Drawf.dashLine(Pal.placing,
-                x * tilesize + dx * (tilesize * size / 2f + 2),
-                y * tilesize + dy * (tilesize * size / 2f + 2),
-                x * tilesize + dx * (maxLen) * tilesize,
-                y * tilesize + dy * (maxLen) * tilesize
+            x * tilesize + dx * (tilesize * size / 2f + 2),
+            y * tilesize + dy * (tilesize * size / 2f + 2),
+            x * tilesize + dx * (maxLen) * tilesize,
+            y * tilesize + dy * (maxLen) * tilesize
             );
 
             if(dest != null){
-                Drawf.square(dest.x, dest.y, dest.block.size * tilesize/2f + 2.5f, 0f);
+                Drawf.square(dest.x, dest.y, dest.block.size * tilesize / 2f + 2.5f, 0f);
             }
         }
     }
 
     @Override
     public void changePlacementPath(Seq<Point2> points, int rotation, boolean diagonal){
-        if(!diagonal){
+        if(!diagonal || allowDiagonal){
             Placement.calculateNodes(points, this, rotation, (point, other) -> Math.max(Math.abs(point.x - other.x), Math.abs(point.y - other.y)) <= range + size - 1);
         }
     }
@@ -117,20 +120,23 @@ public class BeamNode extends PowerBlock{
 
         if(tree == null) return;
 
-        float cx = tile.worldx() + block.offset, cy = tile.worldy() + block.offset, s = block.size * tilesize/2f, r = maxRange * tilesize;
+        float cx = tile.worldx() + block.offset, cy = tile.worldy() + block.offset, s = block.size * tilesize / 2f, r = maxRange * tilesize;
+        int dirs = (block instanceof BeamNode b && !b.allowDiagonal) ? 4 : 8;
+        var points = dirs == 8 ? Geometry.d8 : Geometry.d4;
 
-        for(int i = 0; i < 4; i++){
-            switch(i){
-                case 0 -> Tmp.r1.set(cx - s, cy - s, r, s * 2f);
-                case 1 -> Tmp.r1.set(cx - s, cy - s, s * 2f, r);
-                case 2 -> Tmp.r1.set(cx + s, cy - s, -r, s * 2f).normalize();
-                case 3 -> Tmp.r1.set(cx - s, cy + s, s * 2f, -r).normalize();
-            }
+        for(int i = 0; i < dirs; i++){
+            var dir = points[i];
+            float rx = dir.x > 0 ? cx - s : (dir.x < 0 ? cx - r - s : cx - s);
+            float rw = dir.x != 0 ? r + s * 2f : s * 2f;
+            float ry = dir.y > 0 ? cy - s : (dir.y < 0 ? cy - r - s : cy - s);
+            float rh = dir.y != 0 ? r + s * 2f : s * 2f;
+
+            Tmp.r1.set(rx, ry, rw, rh);
 
             tempBuilds.clear();
             tree.intersect(Tmp.r1, tempBuilds);
-            int fi = i;
-            Building closest = tempBuilds.min(b -> b instanceof BeamNodeBuild node && node.couldConnect((fi + 2) % 4, block, tile.x, tile.y), b -> b.dst2(cx, cy));
+            int opposite = (i + dirs / 2) % dirs;
+            Building closest = tempBuilds.min(b -> b instanceof BeamNodeBuild node && node.couldConnect(opposite, block, tile.x, tile.y), b -> b.dst2(cx, cy));
             tempBuilds.clear();
             if(closest != null){
                 others.get(closest);
@@ -153,18 +159,20 @@ public class BeamNode extends PowerBlock{
     }
 
     public class BeamNodeBuild extends Building{
-        //current links in cardinal directions
-        public Building[] links = new Building[4];
-        public Tile[] dests = new Tile[4];
+        public Building[] links = new Building[allowDiagonal ? 8 : 4];
+        public Tile[] dests = new Tile[allowDiagonal ? 8 : 4];
         public int lastChange = -2;
 
         /** @return whether a beam could theoretically connect with the specified block at a position */
         public boolean couldConnect(int direction, Block target, int targetX, int targetY){
+            int dirs = allowDiagonal ? 8 : 4;
+            if(direction < 0 || direction >= dirs) return false;
+
             int offset = -(target.size - 1) / 2;
             int minX = targetX + offset, minY = targetY + offset, maxX = targetX + offset + target.size - 1, maxY = targetY + offset + target.size - 1;
-            var dir = Geometry.d4[direction];
+            var dir = (allowDiagonal ? Geometry.d8 : Geometry.d4)[direction];
 
-            int rangeOffset = size/2;
+            int rangeOffset = size / 2;
 
             //find first block with power in range
             for(int j = 1 + rangeOffset; j <= range + rangeOffset; j++){
@@ -172,14 +180,14 @@ public class BeamNode extends PowerBlock{
 
                 if(other == null) return false;
 
-                //hit insulated wall
-                if((other.build != null && other.build.isInsulated()) || (other.block().hasPower && other.block().connectedPower && other.team() == team)){
-                    return false;
-                }
-
                 //within target rectangle
                 if(other.x >= minX && other.y >= minY && other.x <= maxX && other.y <= maxY){
                     return true;
+                }
+
+                //hit insulated wall
+                if((other.build != null && other.build.isInsulated()) || (other.block().hasPower && other.block().connectedPower && other.team() == team)){
+                    return false;
                 }
             }
 
@@ -214,17 +222,20 @@ public class BeamNode extends PowerBlock{
             Draw.alpha(Renderer.laserOpacity);
             float w = laserWidth + Mathf.absin(pulseScl, pulseMag);
 
-            for(int i = 0; i < 4; i ++){
-                if(dests[i] != null && links[i].wasVisible && (!(links[i].block instanceof BeamNode node) ||
-                    (links[i].tileX() != tileX() && links[i].tileY() != tileY()) ||
-                    (links[i].id > id && range >= node.range) || range > node.range)){
+            int dirs = allowDiagonal ? 8 : 4;
+            var points = allowDiagonal ? Geometry.d8 : Geometry.d4;
 
-                    int dst = Math.max(Math.abs(dests[i].x - tile.x),  Math.abs(dests[i].y - tile.y));
+            for(int i = 0; i < dirs; i++){
+                if(dests[i] != null && links[i].wasVisible && (!(links[i].block instanceof BeamNode node) ||
+                (links[i].tileX() != tileX() && links[i].tileY() != tileY()) ||
+                (links[i].id > id && range >= node.range) || range > node.range)){
+
+                    int dst = Math.max(Math.abs(dests[i].x - tile.x), Math.abs(dests[i].y - tile.y));
                     //don't draw lasers for adjacent blocks
-                    if(dst > 1 + size/2){
-                        var point = Geometry.d4[i];
-                        float poff = tilesize/2f;
-                        Drawf.laser(laser, laserEnd, x + poff*size*point.x, y + poff*size*point.y, dests[i].worldx() - poff*point.x, dests[i].worldy() - poff*point.y, w);
+                    if(dst > 1 + size / 2){
+                        var point = points[i];
+                        float poff = tilesize / 2f;
+                        Drawf.laser(laser, laserEnd, x + poff * size * point.x, y + poff * size * point.y, dests[i].worldx() - poff * point.x, dests[i].worldy() - poff * point.y, w);
                     }
                 }
             }
@@ -239,12 +250,16 @@ public class BeamNode extends PowerBlock{
         }
 
         public void updateDirections(){
-            for(int i = 0; i < 4; i ++){
+            int dirs = allowDiagonal ? 8 : 4;
+            var d = allowDiagonal ? Geometry.d8 : Geometry.d4;
+
+            for(int i = 0; i < dirs; i++){
                 var prev = links[i];
-                var dir = Geometry.d4[i];
+                var dir = d[i];
                 links[i] = null;
                 dests[i] = null;
-                int offset = size/2;
+                int offset = size / 2;
+
                 //find first block with power in range
                 for(int j = 1 + offset; j <= range + offset; j++){
                     var other = world.build(tile.x + j * dir.x, tile.y + j * dir.y);
