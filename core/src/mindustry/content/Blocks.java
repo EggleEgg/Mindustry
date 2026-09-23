@@ -4818,26 +4818,6 @@ public class Blocks{
                 }};
 
                 unitSort = UnitSorts.grouped;
-                statusDuration = 60f * 8f;
-
-                fragBullets = 1;
-                fragBullet = new EmptyBulletType(){{
-                    damage = 0f;
-                    lifetime = 60f * 2.5f;
-                    bulletInterval = 20f;
-                    hitEffect = despawnEffect = Fx.none;
-                    intervalBullet = new EmptyBulletType(){{
-                        splashDamage = 15f;
-                        collidesGround = true;
-                        collidesAir = false;
-                        collides = false;
-                        hitEffect = despawnEffect = Fx.none;
-                        pierce = true;
-                        instantDisappear = true;
-                        splashDamageRadius = 90f;
-                        buildingDamageMultiplier = 0f;
-                    }};
-                }};
             }}
             );
 

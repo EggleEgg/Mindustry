@@ -14,7 +14,6 @@ import mindustry.entities.abilities.*;
 import mindustry.entities.bullet.*;
 import mindustry.entities.effect.*;
 import mindustry.entities.part.*;
-import mindustry.entities.part.DrawPart.PartProgress;
 import mindustry.entities.pattern.*;
 import mindustry.gen.*;
 import mindustry.graphics.*;
@@ -2896,8 +2895,8 @@ public class UnitTypes{
                     hitSize = 6f;
                     shootEffect = Fx.shootTitan;
                     smokeEffect = Fx.shootSmokeTitan;
-                    pierceCap = 1;
-                    pierce = false;
+                    pierceCap = 2;
+                    pierce = true;
                     pierceBuilding = true;
 
                     hitColor = backColor = trailColor = Color.valueOf("feb380");
@@ -2908,7 +2907,6 @@ public class UnitTypes{
                     splashDamageRadius = 20f;
                     splashDamage = 50f;
                     maxRange = 190f;
-                    maxRange = 180f;
 
                     fragOnHit = false;
                     pierceFragCap = 1;
@@ -2924,14 +2922,13 @@ public class UnitTypes{
                         height = 16f;
                         lifetime = 10f;
                         hitSize = 4f;
-                        pierceCap = 2;
-                        pierce = true;
-                        pierceBuilding = true;
                         hitColor = backColor = trailColor = Color.valueOf("feb380");
                         frontColor = Color.white;
                         trailWidth = 2.8f;
                         trailLength = 6;
                         hitEffect = despawnEffect = Fx.blastExplosion;
+                        splashDamageRadius = 10f;
+                        splashDamage = 20f;
                     }};
                 }};
             }});
@@ -2941,23 +2938,18 @@ public class UnitTypes{
                 int fi = i ++;
                 weapons.add(new Weapon("vanquish-point-weapon"){{
                     reload = 22 + fi * 5;
-                    reload = 19 + fi * 5;
                     x = 48f / 4f;
                     y = f;
                     shootY = 5.5f;
                     recoil = 2f;
                     rotate = true;
-                    rotateSpeed = 3f;
-                    shootCone = 30f;
-                    shootSound = Sounds.shoot;
+                    rotateSpeed = 2f;
                     shootSound = Sounds.shootStell;
 
                     bullet = new BasicBulletType(12f, 50f){{
                         sprite = "missile-large";
-                        width = 9.5f;
-                        height = 13f;
-                        lifetime = 15f;
-                        hitSize = 6f;
+                        width = 6.5f;
+                        height = 11f;
                         shrinkY = 0f;
                         shrinkX = 0.2f;
                         lifetime = 15f;
@@ -2969,10 +2961,7 @@ public class UnitTypes{
                         trailLength = 5;
                         hitEffect = Fx.blastExplosion;
                         despawnEffect = Fx.hitBulletColor;
-                        trailWidth = 3.1f;
-                        trailLength = 8;
-                        hitEffect = Fx.blastExplosion;
-                        despawnEffect = Fx.hitBulletColor;
+
                     }};
                 }});
             }
@@ -3236,9 +3225,6 @@ public class UnitTypes{
 
                     shrinkX = 0.6f;
                     shrinkY = 0.2f;
-
-                    status = StatusEffects.armorRend;
-                    statusDuration = 300f;
 
                     hitEffect = despawnEffect = new MultiEffect(Fx.hitSquaresColor, new WaveEffect(){{
                         colorFrom = colorTo = Pal.techBlue;

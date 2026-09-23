@@ -56,8 +56,6 @@ public class ShieldArcAbility extends Ability{
                 if(paramField.reflectBuildingDamage > 0f){
                     b.buildingDamageMultiplier = paramField.reflectBuildingDamage;
                 }
-                b.time += 1f;
-                b.type.buildingDamageMultiplier = 1f;
 
             }else{
                 b.absorb();
