@@ -10,6 +10,7 @@ import arc.util.pooling.*;
 import arc.util.serialization.*;
 import mindustry.*;
 import mindustry.ai.*;
+import mindustry.game.Interval;
 import mindustry.gen.*;
 import mindustry.type.*;
 import mindustry.world.*;
@@ -246,7 +247,7 @@ public class Administration{
         getCreateInfo(id).banned = true;
 
         save();
-        Events.fire(new PlayerBanEvent(Groups.player.find(p -> id.equals(p.uuid())), id));
+        Events.fire(new PlayerBanEvent(state.entities.player.find(p -> id.equals(p.uuid())), id));
         return true;
     }
 
@@ -285,7 +286,7 @@ public class Administration{
         info.banned = false;
         bannedIPs.removeAll(info.ips, false);
         save();
-        Events.fire(new PlayerUnbanEvent(Groups.player.find(p -> id.equals(p.uuid())), id));
+        Events.fire(new PlayerUnbanEvent(state.entities.player.find(p -> id.equals(p.uuid())), id));
         return true;
     }
 
@@ -650,7 +651,7 @@ public class Administration{
         public transient String lastSentMessage;
         public transient int messageInfractions;
         public transient Ratekeeper rate = new Ratekeeper();
-        public transient Interval messageTimer = new Interval();
+        public transient mindustry.game.Interval messageTimer = new Interval();
 
         PlayerInfo(String id){
             this.id = id;

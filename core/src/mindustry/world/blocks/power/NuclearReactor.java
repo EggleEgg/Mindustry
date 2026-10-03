@@ -18,11 +18,11 @@ import mindustry.ui.*;
 import mindustry.world.blocks.heat.*;
 import mindustry.world.meta.*;
 
+import mindustry.*;
+
 import static mindustry.Vars.*;
 
 public class NuclearReactor extends PowerGenerator{
-    public final int timerFuel = timers++;
-
     public Color lightColor = Color.valueOf("7f19ea");
     public Color coolColor = new Color(1, 1, 1, 0f);
     public Color hotColor = Color.valueOf("ff9575a3");
@@ -74,9 +74,9 @@ public class NuclearReactor extends PowerGenerator{
     }
 
     @Override
-    public void setStats(){
+    public void setStats(Stats stats){
         stats.timePeriod = itemDuration;
-        super.setStats();
+        super.setStats(stats);
 
         stats.add(Stat.meltdownTime, table -> {
             float avg = (itemDuration / 60f) / (1f + heatConsumeRate / 2f);
@@ -109,6 +109,7 @@ public class NuclearReactor extends PowerGenerator{
         public float heatProgress;
         public float flash;
         public float smoothLight;
+        public float fuelTimer;
 
         @Override
         public void updateTile(){
@@ -119,8 +120,9 @@ public class NuclearReactor extends PowerGenerator{
             if(fuel > 0 && enabled){
                 heat += heatLastFrame = fullness * heating * Math.min(delta(), 4f);
 
-                if(timer(timerFuel, itemDuration / (timeScale + (heat > heatLastFrame ? 1f * heat * heatConsumeRate : 0f)))){
+                if((fuelTimer += Time.delta * (timeScale + (heat > heatLastFrame ? 1f * heat * heatConsumeRate : 0f))) >= itemDuration){
                     consume();
+                    fuelTimer %= itemDuration;
                 }
             }else{
                 productionEfficiency = 0f;
@@ -161,8 +163,8 @@ public class NuclearReactor extends PowerGenerator{
         }
 
         @Override
-        public double sense(LAccess sensor){
-            if(sensor == LAccess.heat) return heat;
+        public double sense(LogicProp sensor){
+            if(sensor == LogicProp.heat) return heat;
             return super.sense(sensor);
         }
 
@@ -175,7 +177,7 @@ public class NuclearReactor extends PowerGenerator{
         public void drawLight(){
             float fract = productionEfficiency;
             smoothLight = Mathf.lerpDelta(smoothLight, fract, 0.08f);
-            Drawf.light(x, y, (90f + Mathf.absin(5, 5f)) * smoothLight, Tmp.c1.set(lightColor).lerp(Color.scarlet, heat), 0.6f * smoothLight);
+            Drawf.light(x, y, (90f + Mathf.absin(Vars.state.time, 5, 5f)) * smoothLight, Tmp.c1.set(lightColor).lerp(Color.scarlet, heat), 0.6f * smoothLight);
         }
 
         @Override

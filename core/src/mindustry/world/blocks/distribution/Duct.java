@@ -56,8 +56,8 @@ public class Duct extends Block implements Autotiler{
     }
 
     @Override
-    public void setStats(){
-        super.setStats();
+    public void setStats(Stats stats){
+        super.setStats(stats);
 
         stats.add(Stat.itemsMoved, 60f / speed, StatUnit.itemsSecond);
     }
@@ -288,8 +288,8 @@ public class Duct extends Block implements Autotiler{
         }
 
         @Override
-        public double sense(LAccess sensor){
-            if(sensor == LAccess.progress) return progress;
+        public double sense(LogicProp sensor){
+            if(sensor == LogicProp.progress) return progress;
             return super.sense(sensor);
         }
     }

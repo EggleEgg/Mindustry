@@ -2919,13 +2919,11 @@ public class Blocks{
             requirements(Category.production, with(Items.copper, 65, Items.silicon, 60, Items.titanium, 50, Items.thorium, 75));
             drillTime = 280;
             size = 4;
-            drawRim = true;
             hasPower = true;
             tier = 5;
             updateEffect = Fx.pulverizeRed;
             updateEffectChance = 0.03f;
             drillEffect = Fx.mineHuge;
-            rotateSpeed = 6f;
             warmupSpeed = 0.01f;
             itemCapacity = 20;
 
@@ -2934,6 +2932,21 @@ public class Blocks{
 
             consumePower(3f);
             consumeLiquid(Liquids.water, 0.1f).boost();
+
+            drawer = new DrawMulti(new DrawDefault(), new DrawGlowRegion("-rim"){{
+                blending = Blending.additive;
+                color = Color.valueOf("ff5512");
+                layer = Layer.block;
+                glowIntensity = 0.35f;
+                glowScale = 4f;
+                alpha = 1f;
+            }}, new DrawRegion("-rotator"){{
+                spinSprite = true;
+                layer = Layer.block + 0.1f;
+                rotateSpeed = 6;
+            }}, new DrawRegion("-top"){{
+                layer = Layer.block + 0.2f;
+            }});
         }};
 
         waterExtractor = new SolidPump("water-extractor"){{
@@ -5187,7 +5200,7 @@ public class Blocks{
             }};
 
             drawer = new DrawTurret("reinforced-"){{
-                var heatp = PartProgress.warmup.blend(p -> Mathf.absin(2f, 1f) * p.warmup, 0.2f);
+                var heatp = PartProgress.warmup.blend(p -> Mathf.absin(Vars.state.time, 2f, 1f) * p.warmup, 0.2f);
 
                 parts.add(new RegionPart("-blade"){{
                     progress = PartProgress.warmup;
@@ -5595,7 +5608,7 @@ public class Blocks{
                 }},
                 new RegionPart("-mid"){{
                     progress = PartProgress.recoil;
-                    heatProgress = PartProgress.warmup.add(-0.2f).add(p -> Mathf.sin(9f, 0.2f) * p.warmup);
+                    heatProgress = PartProgress.warmup.add(-0.2f).add(p -> Mathf.sin(Vars.state.time, 9f, 0.2f) * p.warmup);
                     mirror = false;
                     under = true;
                     moveY = -5f;
@@ -6254,7 +6267,7 @@ public class Blocks{
                     parts.add(new RegionPart("-spine"){{
                         outline = false;
                         progress = PartProgress.warmup.delay(fi / 5f);
-                        heatProgress = PartProgress.warmup.add(p -> (Mathf.absin(3f, 0.2f) - 0.2f) * p.warmup);
+                        heatProgress = PartProgress.warmup.add(p -> (Mathf.absin(Vars.state.time, 3f, 0.2f) - 0.2f) * p.warmup);
                         mirror = true;
                         under = true;
                         layerOffset = -0.3f;

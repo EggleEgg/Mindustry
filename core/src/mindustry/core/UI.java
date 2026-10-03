@@ -6,6 +6,7 @@ import arc.Input.*;
 import arc.assets.*;
 import arc.func.*;
 import arc.graphics.*;
+import arc.graphics.font.Font;
 import arc.graphics.g2d.*;
 import arc.input.*;
 import arc.math.*;
@@ -117,7 +118,7 @@ public class UI implements ApplicationListener, Loadable{
         Fonts.def.getData().markupEnabled = true;
         Fonts.def.setOwnsTexture(false);
 
-        Core.assets.getAll(Font.class, new Seq<>()).each(font -> font.setUseIntegerPositions(true));
+        Core.assets.getAll(arc.graphics.font.Font.class, new Seq<>()).each(font -> font.setUseIntegerPositions(true));
         Core.scene = new Scene();
         Core.input.addProcessor(Core.scene);
 
@@ -153,7 +154,7 @@ public class UI implements ApplicationListener, Loadable{
 
     @Override
     public Seq<AssetDescriptor> getDependencies(){
-        return Seq.with(new AssetDescriptor<>(Control.class), new AssetDescriptor<>("outline", Font.class), new AssetDescriptor<>("default", Font.class), new AssetDescriptor<>(Mods.class));
+        return Seq.with(new AssetDescriptor<>(Control.class), new AssetDescriptor<>("outline", arc.graphics.font.Font.class), new AssetDescriptor<>("default", Font.class), new AssetDescriptor<>(Mods.class));
     }
 
     @Override
@@ -165,7 +166,14 @@ public class UI implements ApplicationListener, Loadable{
         Events.fire(Trigger.uiDrawBegin);
 
         Core.scene.act();
+
+        //force linear filtering for UI
+        TextureFilter prevMin = Core.atlas.getTexture().getMinFilter(), prevMax = Core.atlas.getTexture().getMagFilter();
+        Core.atlas.getTexture().setFilter(TextureFilter.linear);
+
         Core.scene.draw();
+
+        Core.atlas.getTexture().setFilter(prevMin, prevMax);
 
         if(Core.input.keyTap(KeyCode.mouseLeft) && Core.scene.hasField()){
             Element e = Core.scene.getHoverElement();

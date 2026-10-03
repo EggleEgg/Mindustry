@@ -11,6 +11,7 @@ import arc.scene.ui.layout.*;
 import arc.struct.*;
 import arc.util.*;
 import mindustry.game.*;
+import mindustry.game.Interval;
 import mindustry.gen.*;
 import mindustry.graphics.*;
 import mindustry.net.*;
@@ -48,7 +49,7 @@ public class PlayerListFragment{
             });
 
             cont.table(Tex.buttonTrans, pane -> {
-                pane.label(() -> Core.bundle.format(Groups.player.size() == 1 ? "players.single" : "players", Groups.player.size()));
+                pane.label(() -> Core.bundle.format(state.entities.player.size() == 1 ? "players.single" : "players", state.entities.player.size()));
                 pane.row();
 
                 search = pane.field(null, text -> rebuild()).grow().pad(8).name("search").maxTextLength(maxNameLength).get();
@@ -82,7 +83,7 @@ public class PlayerListFragment{
         boolean found = false;
 
         players.clear();
-        Groups.player.copy(players);
+        state.entities.player.copy(players);
 
         players.sort(Structs.comps(Structs.comparing(Player::team), Structs.comparingBool(p -> !p.admin)));
         if(search.getText().length() > 0){
@@ -237,7 +238,7 @@ public class PlayerListFragment{
                         dialog.show();
                     }).size(h);
                 }
-            }else if(!user.isLocal() && !user.admin && net.client() && Groups.player.size() >= 3 && player.team() == user.team()){ //votekick
+            }else if(!user.isLocal() && !user.admin && net.client() && state.entities.player.size() >= 3 && player.team() == user.team()){ //votekick
                 button.add().growY();
 
                 button.button(Icon.hammer, ustyle,

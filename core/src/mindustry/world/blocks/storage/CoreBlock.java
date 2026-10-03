@@ -18,7 +18,6 @@ import mindustry.*;
 import mindustry.annotations.Annotations.*;
 import mindustry.content.*;
 import mindustry.core.*;
-import mindustry.ctype.*;
 import mindustry.entities.*;
 import mindustry.game.EventType.*;
 import mindustry.game.*;
@@ -122,8 +121,8 @@ public class CoreBlock extends StorageBlock{
     }
 
     @Override
-    public void setStats(){
-        super.setStats();
+    public void setStats(Stats stats){
+        super.setStats(stats);
 
         stats.add(Stat.unitType, table -> {
             table.row();
@@ -240,9 +239,9 @@ public class CoreBlock extends StorageBlock{
 
     @Override
     public void drawPlace(int x, int y, int rotation, boolean valid){
-        if(world.tile(x, y) == null) return;
+        if(state.world.tile(x, y) == null) return;
 
-        if(!canPlaceOn(world.tile(x, y), player.team(), rotation)){
+        if(!canPlaceOn(state.world.tile(x, y), player.team(), rotation)){
 
             drawPlaceText(Core.bundle.get(
                 isFirstTier ?
@@ -406,7 +405,7 @@ public class CoreBlock extends StorageBlock{
                     });
                     Core.scene.add(image);
 
-                    Time.run(launchDuration(), () -> {
+                    Vars.state.run(launchDuration(), () -> {
                         launchEffect.at(this);
                         Effect.shake(5f, 5f, this);
                         thrusterTime = 1f;
@@ -505,7 +504,7 @@ public class CoreBlock extends StorageBlock{
             Draw.scl(scl);
 
             //draw thruster flame
-            float strength = (1f + (size - 3)/2.5f) * scl * thrusterSize * (0.95f + Mathf.absin(2f, 0.1f));
+            float strength = (1f + (size - 3)/2.5f) * scl * thrusterSize * (0.95f + Mathf.absin(Vars.state.time, 2f, 0.1f));
             float offset = (size - 3) * 3f * scl;
 
             for(int i = 0; i < 4; i++){
@@ -604,16 +603,16 @@ public class CoreBlock extends StorageBlock{
         }
 
         @Override
-        public double sense(LAccess sensor){
-            if(sensor == LAccess.itemCapacity) return storageCapacity;
-            if(sensor == LAccess.maxUnits) return Units.getCap(team);
+        public double sense(LogicProp sensor){
+            if(sensor == LogicProp.itemCapacity) return storageCapacity;
+            if(sensor == LogicProp.maxUnits) return Units.getCap(team);
             return super.sense(sensor);
         }
 
         @Override
-        public double sense(Content content){
-            if(content instanceof UnitType type) return team.data().countType(type);
-            return super.sense(content);
+        public double sense(Object object){
+            if(object instanceof UnitType type) return team.data().countType(type);
+            return super.sense(object);
         }
 
         @Override
@@ -693,12 +692,12 @@ public class CoreBlock extends StorageBlock{
             Fx.coreExplosion.at(x, y, team.color);
 
             //add a spawn to the map for future reference - waves should be disabled, so it shouldn't matter
-            if(state.isCampaign() && team == state.rules.waveTeam && team.cores().size <= 1 && spawner.getSpawns().size == 0 && state.rules.sector.planet.enemyCoreSpawnReplace){
+            if(state.isCampaign() && team == state.rules.waveTeam && team.cores().size <= 1 && state.spawner.getSpawns().size == 0 && state.rules.sector.planet.enemyCoreSpawnReplace){
                 //do not recache
                 tile.setOverlayQuiet(Blocks.spawn);
 
-                if(!spawner.getSpawns().contains(tile)){
-                    spawner.getSpawns().add(tile);
+                if(!state.spawner.getSpawns().contains(tile)){
+                    state.spawner.getSpawns().add(tile);
                 }
             }
 
@@ -727,7 +726,7 @@ public class CoreBlock extends StorageBlock{
 
                     if(net.server()){
                         //delay so clients don't destroy it afterwards
-                        Time.run(0f, () -> {
+                        Vars.state.post(() -> {
                             tile.setNet(block, lastDamage, 0);
                         });
                     }
@@ -737,7 +736,7 @@ public class CoreBlock extends StorageBlock{
 
         @Override
         public void drawLight(){
-            Drawf.light(x, y, lightRadius, Pal.accent, 0.65f + Mathf.absin(20f, 0.1f));
+            Drawf.light(x, y, lightRadius, Pal.accent, 0.65f + Mathf.absin(Vars.state.time, 20f, 0.1f));
         }
 
         @Override
@@ -772,7 +771,7 @@ public class CoreBlock extends StorageBlock{
                 storageCapacity += other.block.itemCapacity + other.proximity.sum(e -> owns(other, e) ? e.block.itemCapacity : 0);
             }
 
-            if(!world.isGenerating()){
+            if(!state.generating){
                 for(Item item : content.items()){
                     items.set(item, Math.min(items.get(item), storageCapacity));
                 }

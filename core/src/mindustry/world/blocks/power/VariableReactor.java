@@ -64,8 +64,8 @@ public class VariableReactor extends PowerGenerator{
     }
 
     @Override
-    public void setStats(){
-        super.setStats();
+    public void setStats(Stats stats){
+        super.setStats(stats);
 
         stats.add(Stat.input, maxHeat, StatUnit.heatUnits);
     }
@@ -153,8 +153,8 @@ public class VariableReactor extends PowerGenerator{
         }
 
         @Override
-        public double sense(LAccess sensor){
-            if(sensor == LAccess.heat) return heat;
+        public double sense(LogicProp sensor){
+            if(sensor == LogicProp.heat) return heat;
             return super.sense(sensor);
         }
 

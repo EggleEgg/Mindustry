@@ -4,6 +4,7 @@ import arc.*;
 import arc.audio.*;
 import arc.func.*;
 import arc.graphics.*;
+import arc.graphics.font.Font;
 import arc.graphics.g2d.*;
 import arc.graphics.g2d.TextureAtlas.*;
 import arc.math.*;
@@ -16,14 +17,12 @@ import arc.util.pooling.*;
 import mindustry.annotations.Annotations.*;
 import mindustry.content.*;
 import mindustry.core.*;
-import mindustry.ctype.*;
 import mindustry.entities.*;
 import mindustry.entities.bullet.*;
 import mindustry.entities.units.*;
 import mindustry.game.*;
 import mindustry.gen.*;
 import mindustry.graphics.*;
-import mindustry.graphics.MultiPacker.*;
 import mindustry.input.InputHandler.*;
 import mindustry.logic.*;
 import mindustry.mod.*;
@@ -40,7 +39,7 @@ import java.util.*;
 
 import static mindustry.Vars.*;
 
-public class Block extends UnlockableContent implements Senseable{
+public class Block extends UnlockableContent implements LogicSenseable{
     /** If true, buildings have an ItemModule. */
     public @NoPatch boolean hasItems;
     /** If true, buildings have a LiquidModule. */
@@ -174,9 +173,6 @@ public class Block extends UnlockableContent implements Senseable{
     public boolean updateInUnits = true;
     /** if true, this block updates in payloads in units regardless of the experimental game rule */
     public boolean alwaysUpdateInUnits = false;
-    /** @deprecated use allowedInPayloads instead */
-    @Deprecated
-    public boolean canPickup = true;
     /** if false, only incinerable liquids are dropped when deconstructing; otherwise, all liquids are dropped. */
     public boolean deconstructDropAllLiquid = false;
     /** Whether to use this block's color in the minimap. Only used for overlays. */
@@ -230,8 +226,6 @@ public class Block extends UnlockableContent implements Senseable{
     public float crushDamageMultiplier = 1f;
     /** If true, this block is instantly destroyed by tanks with crushFragile set to true. */
     public boolean crushFragile = false;
-    /** Max of timers used. */
-    public int timers = 0;
     /** Cache layer. Only used for 'cached' rendering of blocks (not buildings). */
     public CacheLayer cacheLayer = CacheLayer.normal;
     /** If true, draw() will be called on the building. */
@@ -306,7 +300,7 @@ public class Block extends UnlockableContent implements Senseable{
     public boolean hasColor = false;
     /** Whether units target this block. */
     public boolean targetable = true;
-    /** If true, this block attacks and is considered a turret in the indexer. Building must implement Ranged. */
+    /** If true, this block attacks and is considered a turret in the state.indexer. Building must implement Ranged. */
     public boolean attacks = false;
     /** If true, this block is mending-related and can be suppressed with special units/missiles. */
     public boolean suppressable = false;
@@ -439,8 +433,6 @@ public class Block extends UnlockableContent implements Senseable{
     protected static final Seq<Tile> tempTiles = new Seq<>();
     protected static final Seq<Building> tempBuilds = new Seq<>();
 
-    /** Dump timer ID.*/
-    protected final int timerDump = timers++;
     /** How often to try dumping items in ticks, e.g. 5 = 12 times/sec*/
     public int dumpTime = 5;
 
@@ -484,7 +476,7 @@ public class Block extends UnlockableContent implements Senseable{
     }
 
     public float percentSolid(int x, int y){
-        Tile tile = world.tile(x, y);
+        Tile tile = state.world.tile(x, y);
         if(tile == null) return 0;
         return tile.getLinkedTilesAs(this, tempTiles)
             .sumf(other -> !other.floor().isLiquid ? 1f : 0f) / size / size;
@@ -514,7 +506,7 @@ public class Block extends UnlockableContent implements Senseable{
 
     public void drawPotentialLinks(int x, int y){
         if((consumesPower || outputsPower) && hasPower && connectedPower){
-            Tile tile = world.tile(x, y);
+            Tile tile = state.world.tile(x, y);
             if(tile != null){
                 PowerNode.getNodeLinks(tile, this, player.team(), other -> {
                     PowerNode node = (PowerNode)other.block;
@@ -581,7 +573,7 @@ public class Block extends UnlockableContent implements Senseable{
 
     public float sumAttribute(@Nullable Attribute attr, int x, int y){
         if(attr == null) return 0;
-        Tile tile = world.tile(x, y);
+        Tile tile = state.world.tile(x, y);
         if(tile == null) return 0;
         return tile.getLinkedTilesAs(this, tempTiles)
             .sumf(other -> !floating && !placeableLiquid && other.floor().isDeep() ? 0 : other.floor().attributes.get(attr));
@@ -641,12 +633,16 @@ public class Block extends UnlockableContent implements Senseable{
     }
 
     @Override
-    public void setStats(){
-        super.setStats();
+    public void setStats(Stats stats){
+        super.setStats(stats);
 
         stats.useCategories = true;
 
         stats.add(Stat.size, "@x@", size, size);
+
+        if(unitCapModifier != 0){
+            stats.add(Stat.maxUnits, (unitCapModifier < 0 ? "-" : "+") + Math.abs(unitCapModifier));
+        }
 
         if(synthetic()){
             stats.add(Stat.health, health, StatUnit.none);
@@ -727,10 +723,6 @@ public class Block extends UnlockableContent implements Senseable{
                 () -> Pal.items,
                 () -> (float)entity.items.total() / itemCapacity)
             );
-        }
-
-        if(unitCapModifier != 0){
-            stats.add(Stat.maxUnits, (unitCapModifier < 0 ? "-" : "+") + Math.abs(unitCapModifier));
         }
 
         //liquids added last
@@ -981,11 +973,6 @@ public class Block extends UnlockableContent implements Senseable{
         }
     }
 
-    /** @return special icons to outline and save with an -outline variant. Vanilla only. */
-    public TextureRegion[] makeIconRegions(){
-        return new TextureRegion[0];
-    }
-
     protected TextureRegion[] icons(){
         //use team region in vanilla team blocks
         TextureRegion r = variants > 0 ? Core.atlas.find(name + "1") : region;
@@ -1213,14 +1200,6 @@ public class Block extends UnlockableContent implements Senseable{
         }
         consumeBuilder.add(consume);
         return consume;
-    }
-
-    public void setupRequirements(Category cat, ItemStack[] stacks){
-        requirements(cat, stacks);
-    }
-
-    public void setupRequirements(Category cat, BuildVisibility visible, ItemStack[] stacks){
-        requirements(cat, visible, stacks);
     }
 
     public void requirements(Category cat, ItemStack[] stacks, boolean unlocked){
@@ -1555,8 +1534,8 @@ public class Block extends UnlockableContent implements Senseable{
     }
 
     @Override
-    public void createIcons(MultiPacker packer){
-        super.createIcons(packer);
+    public void packSprites(PackContext packer){
+        super.packSprites(packer);
 
         if(!synthetic()){
             PixmapRegion image = packer.get(fullIcon);
@@ -1564,12 +1543,18 @@ public class Block extends UnlockableContent implements Senseable{
         }
 
         Seq<Pixmap> toDispose = new Seq<>();
+        PixmapRegion shardTeamTop = null;
 
         //generate paletted team regions
         if(teamRegion != null && teamRegion.found()){
             for(Team team : Team.all){
+                if(!team.hasPalette) continue;
+
+                String teamName = name + "-team-" + team.name;
+                PixmapRegion result;
+
                 //if there's an override, don't generate anything
-                if(team.hasPalette && !Core.atlas.has(name + "-team-" + team.name)){
+                if(!Core.atlas.has(teamName)){
                     var base = packer.get(teamRegion);
                     Pixmap out = new Pixmap(base.width, base.height);
 
@@ -1588,9 +1573,14 @@ public class Block extends UnlockableContent implements Senseable{
 
                     Drawf.checkBleed(out);
 
-                    packer.add(PageType.main, name + "-team-" + team.name, out);
+                    packer.add(teamName, out);
                     toDispose.add(out);
+                    result = new PixmapRegion(out);
+                }else{
+                    result = packer.get(Core.atlas.find(teamName));
                 }
+
+                if(team == Team.sharded) shardTeamTop = result;
             }
 
             teamRegions = new TextureRegion[Team.all.length];
@@ -1604,13 +1594,25 @@ public class Block extends UnlockableContent implements Senseable{
         var gen = icons();
 
         if(outlineIcon){
-            AtlasRegion atlasRegion = (AtlasRegion)gen[outlinedIcon >= 0 ? Math.min(outlinedIcon, gen.length - 1) : gen.length -1];
-            if(atlasRegion.found()){
+            int outlinedIdx = outlinedIcon >= 0 ? Math.min(outlinedIcon, gen.length - 1) : gen.length - 1;
+            AtlasRegion atlasRegion = (AtlasRegion)gen[outlinedIdx];
+            if(packer.has(atlasRegion.name)){
                 PixmapRegion region = packer.get(atlasRegion);
-                Pixmap out = last = Pixmaps.outline(region, outlineColor, outlineRadius);
-                Drawf.checkBleed(out);
-                packer.add(PageType.main, atlasRegion.name, out);
-                toDispose.add(out);
+
+                //unpadded, with any layers above the outlined one composited in; used only for the full icon substitution below
+                last = Pixmaps.outline(region, outlineColor, outlineRadius);
+                for(int i = outlinedIdx + 1; i < gen.length; i++){
+                    if(gen[i] instanceof AtlasRegion above && packer.has(above.name)){
+                        last.draw(packer.get(above), true);
+                    }
+                }
+                toDispose.add(last);
+
+                //padded, replaces the region actually used in-game so the outline isn't clipped at tile edges
+                Pixmap padded = Pixmaps.outline(region, outlineColor, outlineRadius, 1);
+                Drawf.checkBleed(padded);
+                packer.add(atlasRegion.name, padded);
+                toDispose.add(padded);
             }
         }
 
@@ -1618,33 +1620,46 @@ public class Block extends UnlockableContent implements Senseable{
         getRegionsToOutline(toOutline);
 
         for(var region : toOutline){
-            if(region instanceof AtlasRegion atlas && atlas.found()){
+            if(region instanceof AtlasRegion atlas && packer.has(atlas.name)){
                 String regionName = atlas.name;
                 Pixmap outlined = Pixmaps.outline(packer.get(region), outlineColor, outlineRadius);
 
                 Drawf.checkBleed(outlined);
 
-                packer.add(PageType.main, regionName + "-outline", outlined);
+                packer.add(regionName + "-outline", outlined);
                 toDispose.add(outlined);
             }
         }
 
         if(gen.length > 0 && gen[0] != null && gen[0].found()){
-            if(gen.length > 1){
-                Pixmap base = packer.get(gen[0]).crop();
-                for(int i = 1; i < gen.length; i++){
-                    if(i == gen.length - 1 && last != null){
-                        base.draw(last, 0, 0, true);
-                    }else{
-                        base.draw(packer.get(gen[i]), true);
-                    }
-                }
-                packer.add(PageType.main, "block-" + name + "-full", base);
-
-                toDispose.add(base);
-            }else{
-                if(gen[0] != null) packer.add(PageType.main, "block-" + name + "-full", packer.get(gen[0]));
+            Pixmap base = packer.get(gen[0]).crop();
+            if(teamRegions != null && gen[0] == teamRegions[Team.sharded.id] && shardTeamTop != null){
+                base.draw(shardTeamTop, true);
             }
+
+            for(int i = 1; i < gen.length; i++){
+                if(i == gen.length - 1 && last != null){
+                    base.draw(last, 0, 0, true);
+                }else{
+                    base.draw(packer.get(gen[i]), true);
+                }
+
+                if(teamRegions != null && gen[i] == teamRegions[Team.sharded.id] && shardTeamTop != null){
+                    base.draw(shardTeamTop, true);
+                }
+            }
+
+            //a single-region block with no team overlay just reuses its own region, no need for a redundant "-full" copy
+            boolean trivial = gen.length == 1 && gen[0] == Core.atlas.find(name) && shardTeamTop == null;
+            if(!trivial){
+                packer.add("block-" + name + "-full", base);
+            }
+
+            if(isVanilla()){
+                saveScaled(packer, base, "block-" + name + "-ui", Math.min(base.width, maxUiIcon));
+            }
+
+            toDispose.add(base);
         }
 
         toDispose.each(Pixmap::dispose);
@@ -1671,7 +1686,7 @@ public class Block extends UnlockableContent implements Senseable{
     }
 
     @Override
-    public double sense(LAccess sensor){
+    public double sense(LogicProp sensor){
         return switch(sensor){
             case color -> mapColor.toDoubleBits();
             case health, maxHealth -> health;
@@ -1687,8 +1702,8 @@ public class Block extends UnlockableContent implements Senseable{
     }
 
     @Override
-    public double sense(Content content){
-        if(content instanceof Item item){
+    public double sense(Object object){
+        if(object instanceof Item item){
             if(state.rules.infiniteResources) return 0;
 
             for(ItemStack r : requirements){
@@ -1702,8 +1717,8 @@ public class Block extends UnlockableContent implements Senseable{
     }
 
     @Override
-    public Object senseObject(LAccess sensor){
-        if(sensor == LAccess.name) return name;
+    public Object senseObject(LogicProp sensor){
+        if(sensor == LogicProp.name) return name;
         return noSensed;
     }
 }
