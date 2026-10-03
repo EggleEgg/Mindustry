@@ -2503,9 +2503,9 @@ public class Fx{
         });
     }),
 
-    incinerateSlag = new Effect(34, e -> {
+    incinerate = new Effect(34, e -> {
         randLenVectors(e.id, 4, e.finpow() * 5f, (x, y) -> {
-            color(Pal.slagOrange, Color.gray, e.fin());
+            color(e.color, Color.gray, e.fin());
             Fill.circle(e.x + x, e.y + y, e.fout() * 1.7f);
         });
     }),

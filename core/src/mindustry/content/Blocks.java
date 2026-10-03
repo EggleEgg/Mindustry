@@ -1528,10 +1528,12 @@ public class Blocks{
             splitHeat = true;
         }};
 
-        slagIncinerator = new ItemIncinerator("slag-incinerator"){{
+        slagIncinerator = new Incinerator("slag-incinerator"){{
             requirements(Category.crafting, with(Items.tungsten, 15));
             size = 1;
-            consumeLiquid(Liquids.slag, 0f);
+            consumePower(1.5f);
+            outputLiquid = new LiquidStack(Liquids.slag, 0.5f);
+            burnLiquids = true;
         }};
 
         carbideCrucible = new HeatCrafter("carbide-crucible"){{

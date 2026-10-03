@@ -35,6 +35,7 @@ public class Items{
         sand = new Item("sand", Color.valueOf("f7cba4")){{
             lowPriority = true;
             buildable = false;
+            cost = 0.7f;
             //needed to show up as requirement
             alwaysUnlocked = true;
         }};
