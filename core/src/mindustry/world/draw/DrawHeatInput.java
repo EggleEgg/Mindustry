@@ -14,12 +14,19 @@ import mindustry.world.blocks.heat.*;
 public class DrawHeatInput extends DrawBlock{
     public String suffix = "-heat";
     public Color heatColor = new Color(1f, 0.22f, 0.22f, 0.8f);
+    public boolean file;
     public float heatPulse = 0.3f, heatPulseScl = 10f;
 
     public TextureRegion heat;
 
     public DrawHeatInput(String suffix){
         this.suffix = suffix;
+    }
+
+    /** @param file whether to use the full filename instead of a suffix */
+    public DrawHeatInput(String name, boolean file){
+        this.suffix = name;
+        this.file = file;
     }
 
     public DrawHeatInput(){
@@ -50,6 +57,6 @@ public class DrawHeatInput extends DrawBlock{
 
     @Override
     public void load(Block block){
-        heat = Core.atlas.find(block.name + suffix);
+        heat = Core.atlas.find(file ? suffix : block.name + suffix);
     }
 }

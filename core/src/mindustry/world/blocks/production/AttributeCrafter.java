@@ -6,10 +6,11 @@ import mindustry.game.*;
 import mindustry.graphics.*;
 import mindustry.ui.*;
 import mindustry.world.*;
+import mindustry.world.blocks.heat.*;
 import mindustry.world.meta.*;
 
 /** A crafter that gains efficiency from attribute tiles. */
-public class AttributeCrafter extends GenericCrafter{
+public class AttributeCrafter extends HeatCrafter{
     public Attribute attribute = Attribute.heat;
     /** Base efficiency of the crafter. */
     public float baseEfficiency = 1f;
@@ -20,7 +21,7 @@ public class AttributeCrafter extends GenericCrafter{
     /** Whether to show this bar in the UI. */
     public boolean displayEfficiency = true, displayScaledOutput = true;
     /** Whether liquid consumption scales with efficiency. */
-    public boolean scaleLiquidConsumption = false;
+    public boolean scaleLiquidConsumption = true;
     /** Scaled output (yield) multiplier, scales with attribute. <=0 to disable. */
     public float outputScale = 0f;
     /** Scaled efficiency (speed) multiplier, scales with attribute. <=0 to disable. */
@@ -84,7 +85,7 @@ public class AttributeCrafter extends GenericCrafter{
         }
     }
 
-    public class AttributeCrafterBuild extends GenericCrafterBuild{
+    public class AttributeCrafterBuild extends HeatCrafterBuild{
         public float attrsum;
 
         @Override
@@ -93,11 +94,13 @@ public class AttributeCrafter extends GenericCrafter{
         }
 
         public float outputMultiplier(){
-            return baseEfficiency + Math.min(maxBoost, outputScale * attrsum) + attribute.env();
+            float base = baseEfficiency + Math.min(maxBoost, outputScale * attrsum) + attribute.env();
+            return heatRequirement > 0 ? base * (heat / heatRequirement): base;
         }
 
         public float efficiencyMultiplier(){
-            return baseEfficiency + Math.min(maxBoost, boostScale * attrsum) + attribute.env();
+            float base = baseEfficiency + Math.min(maxBoost, boostScale * attrsum) + attribute.env();
+            return heatRequirement > 0 ? base * (heat / heatRequirement): base;
         }
 
         @Override

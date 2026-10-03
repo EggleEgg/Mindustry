@@ -1094,7 +1094,7 @@ public class Blocks{
             itemCapacity = 30;
             boostScale = 0.15f;
             outputScale = 0.15f;
-            drawer = new DrawMulti(new DrawDefault(), new DrawFlame(Color.valueOf("ffef99")));
+            drawer = new DrawMulti(new DrawDefault(), new DrawFlame(Color.valueOf("ffef99")), new DrawHeatInput("heat-reactor-heat", true));
             ambientSound = Sounds.loopSmelter;
             ambientSoundVolume = 0.07f;
 
