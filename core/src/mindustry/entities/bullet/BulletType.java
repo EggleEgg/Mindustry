@@ -165,6 +165,7 @@ public class BulletType extends Content implements Cloneable{
     public float rangeChange = 0f;
     /** When used in a turret with multiple ammo types, this can be set to a non-zero value to influence minRange */
     public float minRangeChange = 0f;
+    public boolean rangeLimited = false;
     /** When used in turrets with limitRange() applied, this adds extra range to the bullets that extends past targeting range. Only particularly relevant in vanilla. */
     public float extraRangeMargin = 0f;
     /** Range initialized in init(). */
@@ -447,34 +448,47 @@ public class BulletType extends Content implements Cloneable{
         return calculateRange(1f, 1f);
     }
 
-    protected float calculateRange(float velocityScl, float lifetimeScl){
+    protected float calculateRange(float velScl, float lifeScl){
         if(rangeOverride > 0) return rangeOverride;
         if(spawnUnit != null) return spawnUnit.lifetime * spawnUnit.speed;
         if(despawnUnit != null) return despawnUnit.lifetime * despawnUnit.speed;
-        float speedScale = speed * velocityScl;
-        float lifeScale = lifetime * lifetimeScl;
+        float speedScale = speed * velScl;
+        float lifeScale = lifetime * lifeScl;
 
         return Math.max(Mathf.zero(drag) ? speedScale * lifeScale : speedScale * (1f - Mathf.pow(1f - drag, lifeScale)) / drag, maxRange);
     }
 
     /** @return maximum distance this bullet (including all its children) can travel. */
-    protected float calculateRangeRecursive(BulletType b){
+    public float calculateRangeRecursive(BulletType b){
+        return calculateRangeRecursive(b, Float.MAX_VALUE);
+    }
+
+    /** @return maximum distance this bullet (including all its children) can travel, capped by range. */
+    public float calculateRangeRecursive(BulletType b, float maxRange){
         if(b == null) return 0f;
 
         //createLightningInternal can extend up to 7.5x length with enough rng
         float lightningRange = b.lightning > 0 ? (b.lightningLength + b.lightningLengthRand * 0.8f) * 6.5f + calculateRangeRecursive(b.lightningType) : 0f;
+        float splashRadius = b.splashDamageRadius > 0f ? b.splashDamageRadius + 4f : 0f;
         float incendRange = incendAmount > 0 ? incendSpread + 4f : 0f;
         float pddleRange = puddleAmount > 0 ? puddleRange + 4f : 0f;
 
+        //spawnbullets
         float spawnRange = 0f;
         for(var spawn : b.spawnBullets){
             spawnRange = Math.max(spawnRange, calculateRangeRecursive(spawn));
         }
 
-        float fragRange = b.fragBullet != null ? b.fragBullet.calculateRange(b.fragVelocityMax, b.fragLifeMax) + b.fragOffsetMax : 0f;
+        //frag bullets do not know their own parent frag fields
+        float fragRange = 0f;
+        if(b.fragBullet != null){
+            b.fragBullet.range = b.fragBullet.calculateRange(Math.max(b.fragVelocityMin, b.fragVelocityMax), Math.max(b.fragLifeMin, b.fragLifeMax));
+            fragRange = calculateRangeRecursive(b.fragBullet) + Math.max(b.fragOffsetMin, b.fragOffsetMax);
+        }
+        float bulletRange = Math.min(b.range <= 0f ? b.calculateRange() : b.range, maxRange);
 
-        return Math.max(spawnRange, (b.range <= 0f ? b.calculateRange() : b.range) + Math.max(b.splashDamageRadius + 4f, Math.max(fragRange,
-        Math.max(calculateRangeRecursive(b.intervalBullet), Math.max(lightningRange, Math.max(incendRange, pddleRange))))));
+        return Math.max(spawnRange, bulletRange + Math.max(splashRadius, Math.max(fragRange, Math.max(calculateRangeRecursive(b.intervalBullet),
+        Math.max(lightningRange, Math.max(incendRange, pddleRange))))));
     }
 
     /** @return continuous damage in damage/sec, or -1 if not continuous. */

@@ -253,6 +253,7 @@ public class Turret extends ReloadTurret{
         float realRange = bullet.rangeChange + range;
         //doesn't handle drag
         bullet.lifetime = (realRange + margin + bullet.extraRangeMargin + 10f) / bullet.speed;
+        bullet.rangeLimited = true;
     }
 
     public void calculateOverlap(ObjectMap<?, BulletType> ammoTypes){

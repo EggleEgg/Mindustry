@@ -4671,7 +4671,7 @@ public class Blocks{
                 hitEffect = new MultiEffect(Fx.titanExplosion, Fx.titanSmoke);
                 despawnEffect = Fx.none;
                 knockback = 2f;
-                lifetime = 140f;
+                lifetime = 9000000000f;
                 height = 19f;
                 width = 17f;
                 splashDamageRadius = 65f;
@@ -4818,8 +4818,7 @@ public class Blocks{
                 }};
 
                 unitSort = UnitSorts.grouped;
-            }}
-            );
+            }});
 
             shootSound = Sounds.shootTank;
             ammoPerShot = 4;
