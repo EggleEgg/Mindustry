@@ -163,7 +163,7 @@ public class StatusEffect extends UnlockableContent{
 
         if(!Vars.headless && effect != Fx.none && Mathf.chanceDelta(effectChance) && !unit.inFogTo(Vars.player.team())){
             Tmp.v1.rnd(Mathf.range(unit.type.hitSize/2f));
-            effect.at(unit.x + Tmp.v1.x, unit.y + Tmp.v1.y, 0, color, parentizeEffect ? unit : null);
+            effect.at(unit.x + Tmp.v1.x, unit.y + Tmp.v1.y, 0, color, unit);
         }
     }
 

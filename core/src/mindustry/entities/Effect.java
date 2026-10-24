@@ -176,7 +176,11 @@ public class Effect{
 
     public float render(int id, Color color, float life, float lifetime, float rotation, float x, float y, Object data){
         container.set(id, color, life, lifetime, rotation, x, y, data);
-        Draw.z(layer);
+        float drawLayer = layer;
+        if(layer == Layer.effect && data instanceof Unitc u){
+            drawLayer = u.type().drawZ(u) + 0.01f;
+        }
+        Draw.z(drawLayer);
         Draw.reset();
         render(container);
         Draw.reset();

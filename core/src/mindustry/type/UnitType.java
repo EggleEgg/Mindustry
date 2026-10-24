@@ -1467,6 +1467,15 @@ public class UnitType extends UnlockableContent implements Senseable{
 
     //region drawing
 
+    /** @return the draw layer for this unit based on elevation and segment index. */
+    public float drawZ(Unit unit){
+        Segmentc seg = unit instanceof Segmentc c ? c : null;
+        //dead flying units are assumed to be falling, and to prevent weird clipping issue with the dark "fog", they always draw above it
+        return unit.elevation > 0.5f || (flying && unit.dead) ? flyingLayer :
+            seg != null ? groundLayer + seg.segmentIndex() / 4000f * Mathf.sign(segmentLayerOrder) + (!segmentLayerOrder ? 0.01f : 0f) :
+            groundLayer + Mathf.clamp(hitSize / 4000f, 0, 0.01f);
+    }
+
     public void draw(Unit unit){
         float scl = xscl;
         if(unit.inFogTo(Vars.player.team())) return;
@@ -1482,13 +1491,7 @@ public class UnitType extends UnlockableContent implements Senseable{
         }
 
         Mechc mech = unit instanceof Mechc m ? m : null;
-        Segmentc seg = unit instanceof Segmentc c ? c : null;
-        float z =
-            isPayload ? Draw.z() :
-            //dead flying units are assumed to be falling, and to prevent weird clipping issue with the dark "fog", they always draw above it
-            unit.elevation > 0.5f || (flying && unit.dead) ? (flyingLayer) :
-            seg != null ? groundLayer + seg.segmentIndex() / 4000f * Mathf.sign(segmentLayerOrder) + (!segmentLayerOrder ? 0.01f : 0f) :
-            groundLayer + Mathf.clamp(hitSize / 4000f, 0, 0.01f);
+        float z = isPayload ? Draw.z() : drawZ(unit);
 
         if(!isPayload && (unit.isFlying() || shadowElevation > 0)){
             Draw.z(Math.min(Layer.darkness, z - 1f));

@@ -27,7 +27,7 @@ public class StatusEffects{
                 opposite(wet, freezing);
                 affinity(tarred, (unit, result, time) -> {
                     unit.damagePierce(transitionDamage);
-                    Fx.burning.at(unit.x + Mathf.range(unit.bounds() / 2f), unit.y + Mathf.range(unit.bounds() / 2f));
+                    Fx.burning.at(unit.x + Mathf.range(unit.bounds() / 2f), unit.y + Mathf.range(unit.bounds() / 2f), 0, color, unit);
                     result.set(burning, Math.min(time + result.time, 300f));
                 });
             });
@@ -110,7 +110,7 @@ public class StatusEffects{
                 opposite(wet, freezing);
                 affinity(tarred, (unit, result, time) -> {
                     unit.damagePierce(8f);
-                    Fx.burning.at(unit.x + Mathf.range(unit.bounds() / 2f), unit.y + Mathf.range(unit.bounds() / 2f));
+                    Fx.burning.at(unit.x + Mathf.range(unit.bounds() / 2f), unit.y + Mathf.range(unit.bounds() / 2f), 0, color, unit);
                     result.set(melting, Math.min(time + result.time, 200f));
                 });
             });
