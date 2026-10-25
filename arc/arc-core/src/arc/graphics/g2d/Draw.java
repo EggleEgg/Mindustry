@@ -67,6 +67,16 @@ public class Draw{
         Core.batch = prev;
     }
 
+    /** Marks the current position in the sorted draw buffer. */
+    public static int mark(){
+        return batch.mark();
+    }
+
+    /** Multiplies the opacity of everything since {@link #mark}. */
+    public static void fade(int mark, float alpha){
+        batch.fade(mark, alpha);
+    }
+
     public static void stencil(Runnable stencil, Runnable contents){
         beginStencil();
 
@@ -208,11 +218,11 @@ public class Draw{
     }
 
     public static void color(Color color){
-        Core.batch.setPackedColor(Color.toFloatBits(color.r, color.g, color.b, color.a * batch.getGlobalAlpha()));
+        Core.batch.setPackedColor(color.toFloatBits());
     }
 
     public static void color(Color color, float alpha){
-        Core.batch.setPackedColor(Color.toFloatBits(color.r, color.g, color.b, Mathf.clamp(alpha) * batch.getGlobalAlpha()));
+        Core.batch.setPackedColor(Color.toFloatBits(color.r, color.g, color.b, Mathf.clamp(alpha)));
     }
 
     public static void color(int color){
@@ -236,15 +246,14 @@ public class Draw{
     }
 
     public static void color(){
-        Core.batch.setPackedColor(Color.toFloatBits(1f, 1f, 1f, batch.getGlobalAlpha()));
+        Core.batch.setPackedColor(Color.whiteFloatBits);
     }
 
     public static void color(float r, float g, float b){
-        Core.batch.setPackedColor(Color.toFloatBits(r, g, b, batch.getGlobalAlpha()));
-    }
+        Core.batch.setPackedColor(Color.toFloatBits(r, g, b, 1f));    }
 
     public static void color(float r, float g, float b, float a){
-        Core.batch.setPackedColor(Color.toFloatBits(r, g, b, Mathf.clamp(a) * batch.getGlobalAlpha()));
+        Core.batch.setPackedColor(Color.toFloatBits(r, g, b, Mathf.clamp(a)));
     }
 
     /** Lightness color. */
@@ -276,19 +285,9 @@ public class Draw{
         Lines.stroke(1f);
     }
 
-    /** Sets the global alpha. */
-    public static void globalAlpha(float alpha){
-        batch.setGlobalAlpha(alpha);
-    }
-
-    /** Gets the global alpha. */
-    public static float globalAlpha(){
-        return batch.getGlobalAlpha();
-    }
-
     public static void alpha(float alpha){
         int abgr = Color.floatToIntColor(batch.getPackedColor());
-        int rawAlpha = (int)(Mathf.clamp(alpha) * batch.getGlobalAlpha() * 255);
+        int rawAlpha = (int)(Mathf.clamp(alpha) * 255);
 
         batch.setPackedColor(Color.intToFloatColor((abgr & 0x00ffffff) | (rawAlpha << 24)));
     }

@@ -22,7 +22,6 @@ public abstract class Batch implements Disposable{
 
     protected float colorPacked = Color.whiteFloatBits;
     protected float mixColorPacked = Color.clearFloatBits;
-    protected float globalAlpha = 1f;
 
     protected void z(float z){
         this.z = z;
@@ -47,14 +46,6 @@ public abstract class Batch implements Disposable{
 
     protected float getPackedMixColor(){
         return mixColorPacked;
-    }
-
-    protected void setGlobalAlpha(float alpha){
-        this.globalAlpha = alpha;
-    }
-
-    protected float getGlobalAlpha(){
-        return globalAlpha;
     }
 
     protected abstract void draw(Texture texture, float[] spriteVertices, int offset, int count);
@@ -85,6 +76,13 @@ public abstract class Batch implements Disposable{
 
     @Override
     public void dispose(){
+    }
+
+    protected int mark(){
+        return 0;
+    }
+
+    protected void fade(int mark, float alpha){
     }
 
     public boolean hasPending(){
