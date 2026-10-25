@@ -16,10 +16,9 @@ public class HideUnitsFilterDialog extends BaseDialog{
 
     public static void load(){
         excluded.clear();
-        for(String name : Core.settings.getString("hideunits.excluded", "").split(",")){
-            if(!name.isEmpty()){
-                excluded.add(name);
-            }
+        ObjectSet<String> loaded = Core.settings.getJson("hideunits.excluded", ObjectSet.class, ObjectSet::new);
+        if(loaded != null){
+            excluded.addAll(loaded);
         }
     }
 
@@ -29,12 +28,7 @@ public class HideUnitsFilterDialog extends BaseDialog{
 
     public static void affects(UnitType type, boolean value){
         if(value ? excluded.remove(type.name) : excluded.add(type.name)){
-            StringBuilder sb = new StringBuilder();
-            for(String name : excluded){
-                if(sb.length() > 0) sb.append(',');
-                sb.append(name);
-            }
-            Core.settings.put("hideunits.excluded", sb.toString());
+            Core.settings.putJson("hideunits.excluded", excluded);
         }
     }
 
