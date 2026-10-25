@@ -31,7 +31,7 @@ public class HideUnitsFilterDialog extends BaseDialog{
         if(value ? excluded.remove(type.name) : excluded.add(type.name)){
             StringBuilder sb = new StringBuilder();
             for(String name : excluded){
-                if(!sb.isEmpty()) sb.append(',');
+                if(sb.length() > 0) sb.append(',');
                 sb.append(name);
             }
             Core.settings.put("hideunits.excluded", sb.toString());
