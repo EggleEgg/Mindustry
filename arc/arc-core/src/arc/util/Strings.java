@@ -356,10 +356,12 @@ public class Strings{
         return builder.toString();
     }
 
+    /** Joins 2 conditions and their entries into one. */
     public static String joinEntries(Boolp cond1, Boolp cond2, String text1, String text2){
         return joinEntries(cond1, cond2, () -> text1, () -> text2);
     }
 
+    /** Joins 2 conditions and their entries into one. */
     public static String joinEntries(Boolp cond1, Boolp cond2, Prov<String> text1, Prov<String> text2){
         return joinEntries(cond1, cond2, text1, text2, "[white]  ~  []");
     }

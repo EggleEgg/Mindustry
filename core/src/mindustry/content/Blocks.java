@@ -4475,22 +4475,23 @@ public class Blocks{
                 shootEffect = sfe;
                 smokeEffect = Fx.shootBigSmoke;
                 ammoMultiplier = 1;
-                pierceCap = 2;
+                pierceCap = 5;
                 pierce = true;
                 pierceBuilding = true;
                 hitColor = backColor = trailColor = Pal.siliconAmmoBack;
                 frontColor = Pal.siliconAmmoFront;
 
-                homingPower = 0.5f;
-                homingArcAngle = 90f;
-                homingArcRadius = 5*8f;
                 homingTiles = false;
                 rangeChange = 7*8f;
                 rotateSpeedMultiplier = 3f;
-                extraRangeMargin = 4f*8f;
-                shootPattern = new ShootPattern(){{
+                extraRangeMargin = 32f;
+                shootPattern = new ShootHomingArc(){{
                     shots = 2;
-                    shotDelay = 4f;
+                    shotDelay = 8f;
+                    arcDelay = 10f/9f;
+                    arcAngleMin = 90f;
+                    arcAngleMax = 360f;
+                    arcRadius = 5*8f;
                 }};
 
                 trailWidth = 2.1f;

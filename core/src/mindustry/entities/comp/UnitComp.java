@@ -58,9 +58,9 @@ abstract class UnitComp implements Healthc, Physicsc, Hitboxc, Statusc, Teamc, I
     transient String lastCommanded;
     transient float shadowAlpha = -1f, healTime;
     transient int lastFogPos;
+    transient float lastRotation = -1f;
     /** Only used in suicide units */
     transient boolean hasTarget;
-    transient float lastRotation;
     private transient float resupplyTime = Mathf.random(10f);
     private transient boolean wasPlayer;
     private transient boolean wasHealed;
@@ -488,6 +488,7 @@ abstract class UnitComp implements Healthc, Physicsc, Hitboxc, Statusc, Teamc, I
     }
 
     public void lookAt(float angle){
+        lastRotation = rotation;
         rotation = Angles.moveToward(rotation, angle, type.rotateSpeed * Time.delta * speedMultiplier() * rotateSpeedMultiplier());
     }
 

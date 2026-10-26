@@ -17,6 +17,7 @@ import mindustry.content.*;
 import mindustry.core.*;
 import mindustry.entities.abilities.*;
 import mindustry.entities.bullet.*;
+import mindustry.entities.pattern.*;
 import mindustry.gen.*;
 import mindustry.graphics.*;
 import mindustry.maps.*;
@@ -803,16 +804,19 @@ public class StatValues{
                         sep(bt, type.pierceCap == -1 ? "@bullet.infinitepierce" : Core.bundle.format("bullet.pierce", type.pierceCap));
                     }
 
+                    if(type.shootPattern instanceof ShootHomingArc){
+                        sep(bt, Core.bundle.get("bullet.archoming"));
+                    }
+
                     sep(bt, Strings.joinEntries(() -> type.homingPower > 0.0001f, () -> type.followAimSpeed > 0f,
-                    () -> type.homingArcRadius > 0f ? Core.bundle.format("bullet.archoming") :
-                        type.homingPower < 0.05f ? Core.bundle.format("bullet.weakhoming") :
-                        type.homingPower < 0.15f ? Core.bundle.format("bullet.mediumhoming") : Core.bundle.format("bullet.stronghoming"),
-                    () -> "@bullet.followaim"));
+                    () -> type.homingPower < 0.05f ? "@bullet.weakhoming" :
+                    type.homingPower < 0.15f ? "@bullet.mediumhoming" :
+                    "@bullet.stronghoming", () -> "@bullet.followaim"));
 
                     if(type.maxRicochetAngle > 0f){
-                        if(type.maxRicochetAngle < 30f) sep(bt, Core.bundle.format("bullet.weakricochet"));
-                        else if(type.maxRicochetAngle < 90f) sep(bt, Core.bundle.format("bullet.mediumricochet"));
-                        else sep(bt, Core.bundle.format("bullet.strongricochet"));
+                        if(type.maxRicochetAngle < 30f) sep(bt, Core.bundle.get("bullet.weakricochet"));
+                        else if(type.maxRicochetAngle < 90f) sep(bt, Core.bundle.get("bullet.mediumricochet"));
+                        else sep(bt, Core.bundle.get("bullet.strongricochet"));
                     }
 
                     //showing the correct value for lightning damage is annoying
@@ -967,6 +971,7 @@ public class StatValues{
 
     //for AmmoListValue
     private static Cell<?> sep(Table table, String text){
+        if(text == null || text.isEmpty()) return null;
         table.row();
         return table.add(text);
     }

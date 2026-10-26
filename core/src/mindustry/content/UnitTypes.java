@@ -4596,7 +4596,7 @@ public class UnitTypes{
                 shootCone = 40f;
                 mirror = true;
 
-                blockRepairSpeed = unitRepairSpeed = -6;//6.2f / 2f;
+                blockRepairSpeed = unitRepairSpeed = 6.2f / 2f;
                 blockRepairPercent = 0.075f / 2f;
                 unitRecentDmgMult = blockRecentDmgMult = 0.1f;
                 unitRecentDmgTime = 60f * 20f;
