@@ -772,6 +772,8 @@ public class StatValues{
 
                     if(t instanceof Item && !compact && ammoType.displayAmmoUsed){
                         sep(bt, Core.bundle.format("bullet.ammoused", fixValue(ammoType.ammoUsed)));
+                    }
+
                     if(type.maxDamageFraction > 0){
                         sep(bt, Core.bundle.format("bullet.maxdamagefraction", (int)(type.maxDamageFraction * 100)));
                     }
@@ -786,10 +788,6 @@ public class StatValues{
 
                     if(type.shieldDamageMultiplier != 1){
                         sep(bt, Core.bundle.format("bullet.shielddamage", Strings.signedMultStat(type.shieldDamageMultiplier)));
-                    }
-
-                    if(type.statLiquidConsumed <= 0f && !compact && !Mathf.equal(type.ammoMultiplier, 1f) && type.displayAmmoMultiplier && (!(t instanceof Turret turret) || turret.displayAmmoMultiplier)){
-                        sep(bt, Core.bundle.format("bullet.multiplier", Strings.multStat(type.ammoMultiplier)));
                     }
 
                     if(!compact && !Mathf.equal(type.reloadMultiplier, 1f)){

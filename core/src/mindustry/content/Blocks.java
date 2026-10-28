@@ -4510,7 +4510,6 @@ public class Blocks{
                 height = 22f;
                 shootEffect = sfe;
                 smokeEffect = Fx.shootBigSmoke;
-                ammoMultiplier = 1;
                 pierceCap = 3;
                 pierceBuilding = false;
                 hitColor = backColor = trailColor = Pal.siliconAmmoBack;
