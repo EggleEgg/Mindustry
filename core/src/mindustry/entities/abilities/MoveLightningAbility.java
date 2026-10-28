@@ -38,7 +38,7 @@ public class MoveLightningAbility extends Ability{
     /** Whether the spawn side alternates */
     public boolean alternate = true;
     /** Jittering heat sprite like the shield on v5 Javelin */
-    public String heatRegion = "error";
+    public String heatSuffix = "-heat";
     /** Bullet type that is fired. Can be null */
     public @Nullable BulletType bullet;
     /** Bullet angle parameters */
@@ -62,7 +62,7 @@ public class MoveLightningAbility extends Ability{
         this.minSpeed = minSpeed;
         this.maxSpeed = maxSpeed;
         this.color = color;
-        this.heatRegion = heatRegion;
+        this.heatSuffix = heatRegion;
     }
 
     public MoveLightningAbility(float damage, int length, float chance, float y, float minSpeed, float maxSpeed, Color color){
@@ -108,7 +108,7 @@ public class MoveLightningAbility extends Ability{
     @Override
     public void draw(Unit unit){
         float scl = Mathf.clamp((unit.vel().len() - minSpeed) / (maxSpeed - minSpeed));
-        TextureRegion region = Core.atlas.find(heatRegion);
+        TextureRegion region = Core.atlas.find(unit.type.name + heatSuffix);
         if(Core.atlas.isFound(region) && scl > 0.00001f){
             Draw.color(color);
             Draw.alpha(scl / 2f);

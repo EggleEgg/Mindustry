@@ -3,6 +3,7 @@ package mindustry.content;
 import arc.graphics.*;
 import arc.math.*;
 import arc.struct.*;
+import arc.util.*;
 import mindustry.*;
 import mindustry.entities.*;
 import mindustry.entities.abilities.*;
@@ -39,6 +40,8 @@ import mindustry.world.meta.*;
 
 import static mindustry.Vars.*;
 import static mindustry.type.ItemStack.*;
+
+import java.util.function.*;
 
 public class Blocks{
     public static Block
@@ -5500,7 +5503,7 @@ public class Blocks{
                             ammoMultiplier = 2f;
 
                             hitColor = engineColor;
-                            shootEffect = new MultiEffect(Fx.massiveExplosion, Fx.scatheExplosionLarge, Fx.scatheLight, Fx.scathePhaseRing, Fx.scathePhaseLines, new WaveEffect(){{
+                            shootEffect = new MultiEffect(Fx.massiveExplosion, Fx.scatheLightLarge, Fx.scathePhaseRing, Fx.scathePhaseLines, new WaveEffect(){{
                                 lifetime = 10f;
                                 strokeFrom = 4f;
                                 sizeTo = 130f;
@@ -5587,6 +5590,14 @@ public class Blocks{
 
                     health = 300;
 
+                    parts.add(new RegionPart("-shine"){{
+                        outline = false;
+                        blending = Blending.additive;
+                        progress = PartProgress.life.delay(0.5f).pulse(5f, 1f - 0.05f, 0.05f);
+                        color = Pal.surge.cpy().a(0f);
+                        colorTo = Pal.surge;
+                    }});
+
                     weapons.add(new Weapon(){{
                         shootCone = 360f;
                         rotate = true;
@@ -5605,7 +5616,7 @@ public class Blocks{
                             lightningLengthRand = 4;
 
                             hitColor = engineColor;
-                            shootEffect = new MultiEffect(Fx.massiveExplosion, Fx.scatheExplosionLarge, new WaveEffect(){{
+                            shootEffect = new MultiEffect(Fx.massiveExplosion, Fx.scatheExplosionLarge, Fx.scatheLightLarge, new WaveEffect(){{
                                 lifetime = 10f;
                                 strokeFrom = 8f;
                                 sizeTo = 80f*2f;
@@ -5645,6 +5656,14 @@ public class Blocks{
                                     fogRadius = 6f;
 
                                     health = 50;
+
+                                    parts.add(new RegionPart("-shine"){{
+                                        outline = false;
+                                        blending = Blending.additive;
+                                        progress = PartProgress.life.delay(0.6f).pulse(5f, 1f - 0.05f, 0.05f);
+                                        color = Pal.surge.cpy().a(0f);
+                                        colorTo = Pal.surge;
+                                    }});
 
                                     weapons.add(new Weapon(){{
                                         shootCone = 360f;

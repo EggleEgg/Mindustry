@@ -1015,6 +1015,13 @@ public class Fx{
         Fill.circle(e.x, e.y, circleRad);
     }).layer(Layer.bullet + 2f),
 
+    scatheLightLarge = new Effect(60f, 320f, e -> {
+        float circleRad = 6f + e.finpow() * 90f;
+
+        color(e.color, e.foutpow());
+        Fill.circle(e.x, e.y, circleRad);
+    }).layer(Layer.bullet + 2f),
+
     scatheLightSmall = new Effect(60f, 160f, e -> {
         float circleRad = 6f + e.finpow() * 40f;
 
@@ -1042,10 +1049,8 @@ public class Fx{
         for(int i = 0; i < shards; i++){
             float angle = (360f / shards) * i * rand.random(0.9f, 1f) + e.fin() * 60f;
             float dist = e.finpow() * 100f;
-            float width = rand.random(0.5f, 1f) * 6f;
-            float length = 3f + e.fout() * rand.random(0.5f, 1f) * 32f;
-            float tx = e.x + Mathf.cosDeg(angle) * dist;
-            float ty = e.y + Mathf.sinDeg(angle) * dist;
+            float width = rand.random(0.5f, 1f) * 6f, length = 3f + e.fout() * rand.random(0.5f, 1f) * 32f;
+            float tx = e.x + Mathf.cosDeg(angle) * dist, ty = e.y + Mathf.sinDeg(angle) * dist;
 
             color(e.color, Color.white, e.fout());
             Drawf.tri(tx, ty, width, length, angle);
@@ -1066,11 +1071,8 @@ public class Fx{
         //skinny long lines
         rand.setSeed(e.id + 1);
         for(int i = 0; i < 16; i++){
-            float angle = rand.random(360f);
-            float arcLen = rand.random(40f, 100f) * e.finpow();
+            float angle = rand.random(360f), arcLen = rand.random(40f, 100f) * e.finpow();
             float arcStroke = rand.random(0.5f, 2f) * e.fout() * 2f;
-            float branchOff = rand.random(20f, 45f);
-
             float flicker = Mathf.absin(e.fin() * (i + 1) * 28f, 1f, 1f);
 
             color(Color.white, e.color, e.fin() * flicker);
@@ -1078,8 +1080,7 @@ public class Fx{
             lineAngle(e.x, e.y, angle, arcLen);
 
             //tip glow
-            float tipX = e.x + Mathf.cosDeg(angle) * arcLen;
-            float tipY = e.y + Mathf.sinDeg(angle) * arcLen;
+            float tipX = e.x + Mathf.cosDeg(angle) * arcLen, tipY = e.y + Mathf.sinDeg(angle) * arcLen;
             color(Color.white, e.color, e.fout() * flicker);
             Fill.circle(tipX, tipY, arcStroke * 2f * e.fout() * flicker);
             Drawf.light(tipX, tipY, arcStroke * 10f, e.color, 0.6f * e.fout() * flicker);
@@ -1088,8 +1089,7 @@ public class Fx{
         //thick short lines
         rand.setSeed(e.id + 5);
         for(int i = 0; i < 16; i++){
-            float angle = rand.random(360f);
-            float stroke = rand.random(3f, 6f) * e.fout() * 1.5f;
+            float angle = rand.random(360f), stroke = rand.random(3f, 6f) * e.fout() * 1.5f;
             float len = rand.random(18f, 30f) * e.finpow();
             float flicker = Mathf.absin(e.fin() * (i + 1) * 28f, 1f, 1f);
 

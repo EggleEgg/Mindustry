@@ -26,8 +26,7 @@ public class LastStandAbility extends Ability{
     public float exponent = 2f;
     protected float warmup;
 
-    public String shineSuffix = "-shine";
-    public boolean drawShine = true;
+    public @Nullable String shineSuffix = "-shine";
     public float shineSpeed = 1f;
     public float shineLayer = -1;
     public Color color = Pal.turretHeat;
@@ -124,12 +123,13 @@ public class LastStandAbility extends Ability{
 
     @Override
     public void draw(Unit unit){
-        if(drawShine && warmup > 0.001f){
+        TextureRegion region = Core.atlas.find(unit.type.name + shineSuffix);
+        if(Core.atlas.isFound(region) && warmup > 0.001f){
             if(shineLayer > 0) Draw.z(shineLayer);
             Draw.color(color, warmup);
             Draw.blend(Blending.additive);
             Draw.alpha(Mathf.absin(Vars.state.time, 2f / (warmup * shineSpeed), warmup / 2f + 0.5f));
-            Draw.rect(Core.atlas.find(unit.type.name + shineSuffix), unit.x, unit.y, unit.rotation - 90f);
+            Draw.rect(region, unit.x, unit.y, unit.rotation - 90f);
             Draw.reset();
             Draw.blend();
         }

@@ -1813,13 +1813,9 @@ public class UnitType extends UnlockableContent implements LogicSenseable{
 
                 WeaponMount mount = unit.mounts.length > part.weaponIndex ? unit.mounts[part.weaponIndex] : null;
                 if(mount != null){
-                    DrawPart.params.set(mount.warmup, mount.reload / mount.weapon.reload, mount.smoothReload, mount.heat, mount.recoil, mount.charge, unit.x, unit.y, unit.rotation);
+                    DrawPart.params.set(mount.warmup, mount.reload / mount.weapon.reload, mount.smoothReload, mount.heat, mount.recoil, mount.charge, unit.x, unit.y, unit.rotation).setUnit(unit);
                 }else{
-                    DrawPart.params.set(0f, 0f, 0f, 0f, 0f, 0f, unit.x, unit.y, unit.rotation);
-                }
-
-                if(unit instanceof Scaled s){
-                    DrawPart.params.life = s.fin();
+                    DrawPart.params.set(0f, 0f, 0f, 0f, 0f, 0f, unit.x, unit.y, unit.rotation).setUnit(unit);
                 }
 
                 applyColor(unit);
