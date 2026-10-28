@@ -337,7 +337,7 @@ public abstract class BaseShieldAbility extends Ability implements UnitShieldPro
     @Override
     public void death(Unit unit){
         //self-destructing units can have a shield on death
-        if(getShield(unit) > 0f && !wasBroken){
+        if(getShield(unit) > 0f){
             breakShield();
         }
     }
