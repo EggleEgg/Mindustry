@@ -147,11 +147,11 @@ public class RepairBeamWeapon extends Weapon{
     }
 
     public boolean isDamaged(Unit u){
-        return u.damaged() || ((unitRepairSpeed <= 0f || unitRepairPercent <= 0f) && u.type.targetable);
+        return u.damaged() || (!(unitRepairSpeed > 0f && unitRepairPercent == 0f) && !(unitRepairSpeed == 0f && unitRepairPercent > 0f) && u.type.targetable);
     }
 
     public boolean isDamaged(Building b){
-        return b.damaged() || ((blockRepairSpeed <= 0f || blockRepairPercent <= 0f) && b.block.targetable);
+        return b.damaged() || (!(blockRepairSpeed > 0f && blockRepairPercent == 0f) && !(blockRepairSpeed == 0f && blockRepairPercent > 0f) && b.block.targetable);
     }
 
     @Override

@@ -56,7 +56,7 @@ abstract class BulletComp implements Timedc, Damagec, Hitboxc, Teamc, Posc, Draw
 
     transient Posc stickyTarget;
     transient Posc arcTarget;
-    transient float arcRemaining;
+    transient float arcRemaining, arcRad;
     transient float stickyX, stickyY, stickyRotation, stickyRotationOffset;
 
     @Override
@@ -140,12 +140,11 @@ abstract class BulletComp implements Timedc, Damagec, Hitboxc, Teamc, Posc, Draw
                 remove();
             }else{
                 collided.add(other.id());
+                arcTarget = null;
             }
 
             type.hitEntity(self(), other, other instanceof Healthc h ? h.health() : 0f);
         }
-
-        arcTarget = null;
     }
 
     public void stickTo(Posc other){
@@ -156,10 +155,6 @@ abstract class BulletComp implements Timedc, Damagec, Hitboxc, Teamc, Posc, Draw
         stickyTarget = other;
         stickyRotationOffset = rotation;
         stickyRotation = (other instanceof Rotc rot ? rot.rotation() : 0f);
-    }
-
-    public Teamc homingTarget(){
-        return homingTarget(type.homingRange);
     }
 
     public Teamc homingTarget(float homingRange){

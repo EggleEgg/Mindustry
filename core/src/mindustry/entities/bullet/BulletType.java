@@ -327,6 +327,12 @@ public class BulletType extends Content implements Cloneable{
     /** Use a negative value to disable homing delay. */
     public float homingDelay = -1f;
     public boolean homingTiles = true, homingAir = true, homingGround = true;
+    /** Radius of the arc trajectory this bullet will follow upon finding a new target. */
+    public float homingArcRadius = -1f;
+    /** Angle of the arc trajectory this bullet will follow upon finding a new target. */
+    public float homingArcAngleMin = 180f, homingArcAngleMax = 180f;
+    /** Multiplier on lifetime added when homing in an arc. */
+    public float homingArcLife = 1f;
     /** Whether homing position is predictive. */
     public boolean homingPredict = false;
     /** Speed at which bullet rotates to follow cursor. <= 0 to disable. */
@@ -759,6 +765,7 @@ public class BulletType extends Content implements Cloneable{
     public void update(Bullet b){
         updateTrail(b);
         updateHoming(b);
+        updateFollowAim(b);
         updateWeaving(b);
         updateTrailEffects(b);
         updateBulletInterval(b);
@@ -774,13 +781,57 @@ public class BulletType extends Content implements Cloneable{
     }
 
     public void updateHoming(Bullet b){
-        if(homingPower > 0.0001f && b.time >= homingDelay){
-            Teamc target = b.homingTarget();
+        if(b.time < homingDelay) return;
+
+        float hPower = homingPower * Time.delta * 50f;
+        if(homingArcRadius > 0){
+            if(b.arcTarget == null){
+                b.arcRemaining = b.arcRad = 0;
+                b.arcTarget = b.homingTarget(homingArcRadius * 2f + b.vel.len());
+            }
+            if(b.arcTarget != null){
+                //prediction fails when a target is right next to the bullet
+                Vec2 predict = Predict.intercept(b, b.arcTarget, b.dst(b.arcTarget) > homingArcRadius + 8f, b.vel.len());
+                b.aimX = predict.x;
+                b.aimY = predict.y;
+
+                int side = Mathf.signs[b.id & 1];
+                float arcAngle = Mathf.randomSeed(b.id, homingArcAngleMin, homingArcAngleMax);
+
+                //start arching
+                if(b.arcRemaining == 0 && b.within(predict.x, predict.y, homingArcRadius * (arcAngle > 180f ? 1f : 1f - Mathf.cosDeg(arcAngle)))){
+                    float targetDst = b.dst(predict.x, predict.y);
+                    b.arcRemaining = arcAngle;
+                    b.arcRad = Mathf.clamp(homingArcRadius, 0.001f, targetDst - 8f); //cap distance when up close
+
+                    //extend lifetime
+                    if(b.vel.len() > 0.001f) b.lifetime += Math.max(0f, homingArcLife * b.arcRad * arcAngle * Mathf.degRad - targetDst) / b.vel.len();
+                    b.vel.setAngle(b.angleTo(predict.x, predict.y) - side * 90f + side * b.vel.len() * Time.delta / b.arcRad * Mathf.radDeg / 2f);
+                }
+
+                if(b.arcRemaining > 0){
+                    float step = Math.min(b.vel.len() * Time.delta / b.arcRad * Mathf.radDeg, b.arcRemaining);
+                    b.vel.rotate(side * step);
+
+                    if((b.arcRemaining -= step) <= 0f){ //instant rotation
+                        b.arcRemaining = -1f;
+                        float angle = Angles.angle(b.x, b.y, predict.x, predict.y);
+                        b.rotation(angle);
+                        b.vel.setAngle(angle);
+                    }
+                }else{
+                    b.vel.setAngle(Angles.moveToward(b.rotation(), b.angleTo(homingPredict ? predict : b.arcTarget), hPower));
+                }
+            }
+        }else if(homingPower > 0.0001f){
+            Teamc target = b.homingTarget(homingRange);
             if(target != null){
-                b.vel.setAngle(Angles.moveToward(b.rotation(), b.angleTo(homingPredict ? Predict.intercept(b, target, speed) : target), homingPower * Time.delta * 50f));
+                b.vel.setAngle(Angles.moveToward(b.rotation(), b.angleTo(homingPredict ? Predict.intercept(b, target, speed) : target), hPower));
             }
         }
+    }
 
+    public void updateFollowAim(Bullet b){
         if(followAimSpeed > 0f && b.shooter instanceof Unit u){
             float angle = b.angleTo(u.aimX, u.aimY);
             b.vel.setAngle(Angles.moveToward(b.vel.angle(), angle, followAimSpeed * Time.delta));

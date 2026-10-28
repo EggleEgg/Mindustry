@@ -3,7 +3,6 @@ package mindustry.content;
 import arc.graphics.*;
 import arc.math.*;
 import arc.struct.*;
-import arc.util.*;
 import mindustry.*;
 import mindustry.entities.*;
 import mindustry.entities.abilities.*;
@@ -40,8 +39,6 @@ import mindustry.world.meta.*;
 
 import static mindustry.Vars.*;
 import static mindustry.type.ItemStack.*;
-
-import java.util.function.*;
 
 public class Blocks{
     public static Block
@@ -4471,37 +4468,37 @@ public class Blocks{
                 hitEffect = despawnEffect = Fx.hitBulletColor;
                 buildingDamageMultiplier = 0.3f;
             }},
-            Items.silicon, new BasicBulletType(9f, 45){{
+            Items.silicon, new BasicBulletType(8f, 30){{
                 width = 10f;
                 hitSize = 7f;
                 height = 22f;
                 shootEffect = sfe;
                 smokeEffect = Fx.shootBigSmoke;
                 ammoMultiplier = 1;
-                pierceCap = 5;
-                pierce = true;
-                pierceBuilding = true;
+                pierceCap = 3;
+                pierceBuilding = false;
                 hitColor = backColor = trailColor = Pal.siliconAmmoBack;
                 frontColor = Pal.siliconAmmoFront;
+                inaccuracy = 3f;
 
+                homingPower = 0.035f;
+                homingArcAngleMin = 90f;
+                homingArcAngleMax = 360f;
+                homingArcRadius = 5*8f;
+                homingDelay = 10f / 7f;
                 homingTiles = false;
-                rangeChange = 7*8f;
+                rangeChange = 10*8f;
                 rotateSpeedMultiplier = 3f;
-                extraRangeMargin = 32f;
-                shootPattern = new ShootHomingArc(){{
+                airDamageMultiplier = 1.25f;
+                shootPattern = new ShootPattern(){{
                     shots = 2;
-                    shotDelay = 8f;
-                    arcDelay = 10f/9f;
-                    arcAngleMin = 90f;
-                    arcAngleMax = 360f;
-                    arcRadius = 5*8f;
+                    shotDelay = 10f;
                 }};
 
+                extraRangeMargin = 32f;
                 trailWidth = 2.1f;
                 trailLength = 10;
                 hitEffect = despawnEffect = Fx.hitBulletColor;
-                airDamageMultiplier = 1.2f;
-                reloadMultiplier = 1.2f;
                 buildingDamageMultiplier = 0.3f;
             }},
             Items.tungsten, new BasicBulletType(8f, 95){{
@@ -5055,8 +5052,9 @@ public class Blocks{
                 smokeEffect = Fx.shootSmokeDisperse;
                 frontColor = Color.valueOf("dae1ee");
                 backColor = trailColor = hitColor = Pal.siliconAmmoBack;
-                ammoMultiplier = 4f;
+                ammoMultiplier = 1f;
 
+                rangeChange = 14f*8f;
                 lifetime = 34f;
                 rotationOffset = 90f;
                 trailLength = 7;
@@ -5507,6 +5505,13 @@ public class Blocks{
                                 lifetime = 10f;
                                 strokeFrom = 4f;
                                 sizeTo = 130f;
+                            }}, new WaveEffect(){{
+                                sizeFrom = 6f;
+                                sizeTo = 90f + 6f;
+                                strokeFrom = 5f;
+                                strokeTo = 1f;
+                                colorFrom = colorTo = hitColor;
+                                interp = Interp.pow3Out;
                             }});
 
                             collidesAir = false;
