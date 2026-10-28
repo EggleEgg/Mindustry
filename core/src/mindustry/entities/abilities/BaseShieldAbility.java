@@ -305,7 +305,7 @@ public abstract class BaseShieldAbility extends Ability implements UnitShieldPro
         if(unitSlowdown > 0f){
             //slowdown changes are % based
             shots = Mathf.approachDelta(shots, 0f, shotThreshold / slowdownTime);
-            unit.speedMultiplier = Mathf.approachDelta(1f, unitSlowdown, Mathf.clamp(shots / shotThreshold));
+            unit.speedMultiplier *= Mathf.approachDelta(1f, unitSlowdown, Mathf.clamp(shots / shotThreshold));
         }
 
         if(shield < scaledMax(unit)){
