@@ -51,7 +51,8 @@ public class ContinuousFlameBulletType extends ContinuousBulletType{
         hitColor = colors[1].cpy().a(1f);
         lightColor = hitColor;
         lightOpacity = 0.7f;
-        ammoMultiplier = 1f;
+        laserAbsorb = true;
+        ammoUsed = 1f;
         pierceArmor = true;
     }
 
