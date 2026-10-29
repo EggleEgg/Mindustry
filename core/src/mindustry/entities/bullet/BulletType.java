@@ -805,7 +805,7 @@ public class BulletType extends Content implements Cloneable{
                     b.arcRad = Mathf.clamp(homingArcRadius, 0.001f, targetDst - 8f); //cap distance when up close
 
                     //extend lifetime
-                    if(b.vel.len() > 0.001f) b.lifetime += Math.max(0f, homingArcLife * b.arcRad * arcAngle * Mathf.degRad - targetDst) / b.vel.len();
+                    if(b.vel.len() > 0.001f) b.lifetime += homingArcLife * Math.max(0f, b.arcRad * arcAngle * Mathf.degRad - targetDst) / b.vel.len();
                     b.vel.setAngle(b.angleTo(predict.x, predict.y) - side * 90f + side * b.vel.len() * Time.delta / b.arcRad * Mathf.radDeg / 2f);
                 }
 

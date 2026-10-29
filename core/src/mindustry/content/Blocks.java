@@ -4510,6 +4510,7 @@ public class Blocks{
                 height = 22f;
                 shootEffect = sfe;
                 smokeEffect = Fx.shootBigSmoke;
+                ammoUsed = 1f;
                 pierceCap = 3;
                 pierceBuilding = false;
                 hitColor = backColor = trailColor = Pal.siliconAmmoBack;
@@ -4613,7 +4614,7 @@ public class Blocks{
             shootSound = Sounds.shootBreach;
 
             targetUnderBlocks = false;
-            consumeAmmoOnce = true;
+            consumeAmmoOnce = false;
             shake = 1f;
             drawer = new DrawTurret("reinforced-");
             shootY = -2;
@@ -5015,7 +5016,7 @@ public class Blocks{
 
         disperse = new ItemTurret("disperse"){{
             itemCapacity = 12;
-            requirements(Category.turret, with(Items.thorium, 50, Items.oxide, 50, Items.silicon, 200, Items.beryllium, 350));
+            requirements(Category.turret, with(Items.thorium, 50, Items.oxide, 90, Items.silicon, 200, Items.beryllium, 350));
 
             ammo(
             Items.tungsten, new BasicBulletType(){{
