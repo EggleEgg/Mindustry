@@ -289,6 +289,8 @@ public class UnitType extends UnlockableContent implements LogicSenseable{
     public float shieldBounds;
     /** All weapons that this unit will shoot with. */
     public Seq<Weapon> weapons = new Seq<>();
+    /** Weapon sets that this unit can switch between. */
+    public Seq<Seq<Weapon>> weaponSets = new Seq<>();
     /** None of the status effects in this set can be applied to this unit. */
     public ObjectSet<StatusEffect> immunities = new ObjectSet<>();
 
@@ -878,6 +880,12 @@ public class UnitType extends UnlockableContent implements LogicSenseable{
             stats.add(Stat.weapons, StatValues.weapons(this, weapons));
         }
 
+        if(weaponSets.any()){
+            for(int i = 0; i < weaponSets.size; i++){
+                stats.add(Stat.weapons, StatValues.weapons(this, weaponSets.get(i)));
+            }
+        }
+
         if(immunities.size > 0){
             stats.add(Stat.immunities, StatValues.statusEffects(immunities.toSeq().sort()));
         }
@@ -1009,6 +1017,13 @@ public class UnitType extends UnlockableContent implements LogicSenseable{
                 range = Math.min(range, weapon.range() - margin);
                 maxRange = Math.max(maxRange, weapon.range() - margin);
             }
+            for(Seq<Weapon> set : weaponSets){
+                for(Weapon weapon : set){
+                    if(!weapon.useAttackRange) continue;
+                    range = Math.min(range, weapon.range() - margin);
+                    maxRange = Math.max(maxRange, weapon.range() - margin);
+                }
+            }
         }
 
         if(maxRange < 0){
@@ -1016,8 +1031,13 @@ public class UnitType extends UnlockableContent implements LogicSenseable{
 
             for(Weapon weapon : weapons){
                 if(!weapon.useAttackRange) continue;
-
                 maxRange = Math.max(maxRange, weapon.range() - margin);
+            }
+            for(Seq<Weapon> set : weaponSets){
+                for(Weapon weapon : set){
+                    if(!weapon.useAttackRange) continue;
+                    maxRange = Math.max(maxRange, weapon.range() - margin);
+                }
             }
         }
 
@@ -1074,35 +1094,20 @@ public class UnitType extends UnlockableContent implements LogicSenseable{
 
         updateShieldBounds();
 
-        //add mirrored weapon variants
-        Seq<Weapon> mapped = new Seq<>();
-        for(Weapon w : weapons){
-            if(w.recoilTime < 0) w.recoilTime = w.reload;
-            mapped.add(w);
-
-            //mirrors are copies with X values negated
-            if(w.mirror){
-                Weapon copy = w.copy();
-                copy.flip();
-                mapped.add(copy);
-
-                //since there are now two weapons, the reload and recoil time must be doubled
-                w.recoilTime *= 2f;
-                copy.recoilTime *= 2f;
-                w.reload *= 2f;
-                copy.reload *= 2f;
-
-                w.otherSide = mapped.size - 1;
-                copy.otherSide = mapped.size - 2;
-            }
-        }
-        this.weapons = mapped;
-
+        this.weapons = mirrorWeapons(weapons);
         weapons.each(Weapon::init);
 
-        canHeal = weapons.contains(w -> w.bullet.heals());
+        Seq<Seq<Weapon>> mappedSets = new Seq<>();
+        for(Seq<Weapon> set : weaponSets){
+            Seq<Weapon> mappedSet = mirrorWeapons(set);
 
-        canAttack = weapons.contains(w -> !w.noAttack);
+            mappedSet.each(Weapon::init);
+            mappedSets.add(mappedSet);
+        }
+        this.weaponSets = mappedSets;
+
+        canHeal = weapons.contains(w -> w.bullet.heals()) || weaponSets.contains(s -> s.contains(w -> w.bullet.heals()));
+        canAttack = weapons.contains(w -> !w.noAttack) || weaponSets.contains(s -> s.contains(w -> !w.noAttack));
 
         //assign default commands.
         if(commands.size == 0){
@@ -1165,6 +1170,32 @@ public class UnitType extends UnlockableContent implements LogicSenseable{
 
         //only do this after everything else was initialized
         sample = constructor.get();
+    }
+
+    /** Adds mirrored weapon variants. */
+    public Seq<Weapon> mirrorWeapons(Seq<Weapon> weapons){
+        Seq<Weapon> mapped = new Seq<>();
+        for(Weapon w : weapons){
+            if(w.recoilTime < 0) w.recoilTime = w.reload;
+            mapped.add(w);
+
+            //mirrors are copies with X values negated
+            if(w.mirror){
+                Weapon copy = w.copy();
+                copy.flip();
+                mapped.add(copy);
+
+                //since there are now two weapons, the reload and recoil time must be doubled
+                w.recoilTime *= 2f;
+                copy.recoilTime *= 2f;
+                w.reload *= 2f;
+                copy.reload *= 2f;
+
+                w.otherSide = mapped.size - 1;
+                copy.otherSide = mapped.size - 2;
+            }
+        }
+        return mapped;
     }
 
     public float estimateDps(){

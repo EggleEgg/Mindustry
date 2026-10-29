@@ -2917,12 +2917,14 @@ public class UnitTypes{
                 shadow = 28f;
                 heatColor = Color.valueOf("f9350f");
                 cooldownTime = 80f;
+                minSwitchRange = 0f;
+                maxSwitchRange = 90f;
 
                 bullet = new BasicBulletType(8f, 150f){{
                     sprite = "missile-large";
                     width = 9.5f;
                     height = 18f;
-                    lifetime = 16f;
+                    lifetime = 90f / 8f;
                     hitSize = 6f;
                     shootEffect = Fx.shootTitan;
                     smokeEffect = Fx.shootSmokeTitan;
@@ -2937,7 +2939,6 @@ public class UnitTypes{
                     hitEffect = despawnEffect = Fx.blastExplosion;
                     splashDamageRadius = 20f;
                     splashDamage = 50f;
-                    maxRange = 190f;
 
                     fragOnHit = false;
                     pierceFragCap = 1;
@@ -2963,6 +2964,110 @@ public class UnitTypes{
                     }};
                 }};
             }});
+
+            weaponSets.add(Seq.with(new Weapon("vanquish-rail-weapon"){{
+                shootSound = Sounds.shootTank;
+                layerOffset = 0.0001f;
+                reload = 180f;
+                shake = 5f;
+                recoil = 4f;
+                rotate = true;
+                rotateSpeed = 1f;
+                shootCone = 0f;
+                mirror = false;
+                x = y = 0f;
+                shadow = 28f;
+                heatColor = Color.valueOf("f9350f");
+                cooldownTime = 160f;
+                minSwitchRange = 90f;
+                maxSwitchRange = 400f;
+
+                bullet = new RailBulletType(){{
+                    length = 400f;
+                    damage = 90f;
+                    splashDamageRadius = 32f;
+                    splashDamage = 30f;
+                    lifetime = 18f;
+                    hitSize = 6f;
+                    pierceCap = 1;
+                    pierce = false;
+                    pierceBuilding = true;
+                    setDefaults = false;
+                    hitColor = Color.valueOf("feb380");
+                    pointEffectSpace = 1f;
+                    knockback = -20f;
+
+                    pointEffect = new ParticleEffect(){{
+                        colorTo = colorFrom = Color.valueOf("feb380");
+                        line = cap = true;
+                        particles = 1;
+                        cone = length = 0f;
+                        baseLength = 2f;
+                        lifetime = Mathf.random(25f, 50f);
+                        strokeFrom = Mathf.random(2f, 6f);
+                        strokeTo = 0f;
+                        lenFrom = lenTo = 4f;
+                    }};
+
+                    shootEffect = Fx.shootTitan;
+                    smokeEffect = new ParticleEffect(){{
+                        colorTo = colorFrom = Color.valueOf("fea480");
+                        particles = Mathf.random(4, 10);
+                        length = Mathf.random(30f, 50f);
+                        lifetime = 35f;
+                        lenFrom = Mathf.random(7f, 14f);
+                        lenTo = strokeTo = 0f;
+                        strokeFrom = 2f;
+                        cone = 10f;
+                        line = true;
+                        interp = Interp.pow2Out;
+                        sizeInterp = Interp.pow2In;
+                    }};
+
+                    hitEffect = endEffect = new ParticleEffect(){{
+                        colorTo = Color.valueOf("feb380");
+                        particles = 8;
+                        length = 60f;
+                        lifetime = 30f;
+                        lenFrom = 10f;
+                        lenTo = strokeTo = 0f;
+                        strokeFrom = 2f;
+                        cone = 40f;
+                        line = true;
+                        interp = Interp.pow2Out;
+                        sizeInterp = Interp.pow2In;
+                    }};
+
+                    fragRandomSpread = 0f;
+                    fragSpread = 10f;
+                    fragBullets = 5;
+                    fragVelocityMin = 1f;
+                    despawnSound = Sounds.explosionDull;
+
+                    fragBullet = new BasicBulletType(8f, 35f){{
+                        sprite = "missile-large";
+                        pierce = true;
+                        pierceBuilding = true;
+                        splashDamageRadius = 20f;
+                        splashDamage = 15f;
+                        pierceCap = 2;
+                        width = 8f;
+                        height = 12f;
+                        lifetime = 10f;
+                        hitSize = 4f;
+                        hitColor = backColor = trailColor = Color.valueOf("feb380");
+                        frontColor = Color.white;
+                        trailWidth = 2.8f;
+                        trailLength = 6;
+                        hitEffect = despawnEffect = Fx.blastExplosion;
+                    }};
+                }};
+
+                parts.add(new RegionPart("-extend"){{
+                    progress = PartProgress.warmup;
+                    moveY = 8f;
+                }});
+            }}));
 
             int i = 0;
             for(float f : new float[]{34f / 4f, -36f / 4f}){
