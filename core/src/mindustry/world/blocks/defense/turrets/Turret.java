@@ -181,7 +181,7 @@ public class Turret extends ReloadTurret{
         float shotsPerSecond = 60f / (reload + (!reloadWhileCharging ? shoot.firstShotDelay : 0f));
         stats.add(Stat.reload, !notBulletPatternShots() && shoot.shots != 1 ?
             //shots X trigger pulls/second
-        StatValues.string("@[lightgray]×[] @ @", shoot.shots, StatValues.fixValue(shotsPerSecond), StatUnit.perSecond.localized()) :
+            StatValues.string("@[lightgray]×[] @ @", shoot.shots, StatValues.fixValue(shotsPerSecond), StatUnit.perSecond.localized()) :
             //shots per pull is 1, so just display shots/sec
             StatValues.number(shotsPerSecond, StatUnit.perSecond));
         stats.add(Stat.targetsAir, targetAir);
