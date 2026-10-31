@@ -695,7 +695,7 @@ public class Schematics implements Loadable{
     /** Maps legacy int configs to new config objects. */
     private static Object mapConfig(Block block, int value, int position){
         if(block instanceof Sorter || block instanceof Unloader || block instanceof ItemSource) return content.item(value);
-        if(block instanceof LiquidSource) return content.liquid(value);
+        if(block instanceof LiquidSource) return content.liquid(value + 1); //account for Liquids.none
         if(block instanceof MassDriver || block instanceof ItemBridge) return Point2.unpack(value).sub(Point2.x(position), Point2.y(position));
         if(block instanceof LightBlock) return value;
 
